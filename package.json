@@ -1,0 +1,12 @@
+{
+  "name": "gemini-image-tool",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "generate": "node src/generate-image.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
