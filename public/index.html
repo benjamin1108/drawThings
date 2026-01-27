@@ -51,6 +51,17 @@
                 required
               ></textarea>
             </label>
+            <div class="reference field">
+              <div class="reference__header">
+                <span>参考图（可选）</span>
+                <button class="button ghost small" type="button" id="reference-add">
+                  添加参考图
+                </button>
+              </div>
+              <input id="reference-input" type="file" accept="image/*" hidden />
+              <div class="reference-grid" id="reference-grid"></div>
+              <div class="reference-tip" id="reference-tip"></div>
+            </div>
             <div class="row actions">
               <button class="button ghost" type="button" id="toggle-editor">
                 编辑模版提示词

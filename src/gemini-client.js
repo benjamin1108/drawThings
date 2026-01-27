@@ -7,6 +7,7 @@ export async function generateImages({
   aspect,
   size,
   negative,
+  referenceImages,
   model,
   baseUrl,
   apiKey,
@@ -42,12 +43,14 @@ export async function generateImages({
       ? ["TEXT", "IMAGE"]
       : ["IMAGE"];
 
+  const resolvedReferences = normalizeReferenceImages(referenceImages);
   const body = buildRequestBody({
     prompt: resolvedPrompt,
     responseModalities,
     aspect,
     size: resolvedSize,
     useV1,
+    referenceImages: resolvedReferences,
   });
 
   if (negative) {
@@ -106,11 +109,53 @@ function normalizeImageSize(size) {
   return trimmed;
 }
 
-function buildRequestBody({ prompt, responseModalities, aspect, size, useV1 }) {
+function normalizeReferenceImages(referenceImages) {
+  if (!Array.isArray(referenceImages)) {
+    return [];
+  }
+  return referenceImages
+    .map((item) => {
+      const data = String(item?.data || "").trim();
+      const mimeType = String(item?.mimeType || item?.mime_type || "").trim();
+      if (!data || !mimeType) {
+        return null;
+      }
+      return { data, mimeType };
+    })
+    .filter(Boolean);
+}
+
+function buildRequestBody({
+  prompt,
+  responseModalities,
+  aspect,
+  size,
+  useV1,
+  referenceImages,
+}) {
+  const parts = [{ text: prompt }];
+  referenceImages.forEach((image) => {
+    if (useV1) {
+      parts.push({
+        inline_data: {
+          mime_type: image.mimeType,
+          data: image.data,
+        },
+      });
+      return;
+    }
+    parts.push({
+      inlineData: {
+        mimeType: image.mimeType,
+        data: image.data,
+      },
+    });
+  });
+
   const contents = [
     {
       role: "user",
-      parts: [{ text: prompt }],
+      parts,
     },
   ];
 

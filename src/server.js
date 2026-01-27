@@ -41,10 +41,12 @@ const server = createServer(async (req, res) => {
       const templatePrompt = body.templatePrompt ? String(body.templatePrompt) : "";
       const userContent = body.userContent ? String(body.userContent) : "";
       const finalPrompt = body.finalPrompt ? String(body.finalPrompt) : prompt;
+      const referenceImages = normalizeReferenceImages(body.referenceImages);
+      const desiredCount = referenceImages.length > 0 ? 1 : count;
 
       const taskId = createTask({
         prompt: finalPrompt,
-        count,
+        count: desiredCount,
         aspect,
         negative,
         size,
@@ -52,6 +54,7 @@ const server = createServer(async (req, res) => {
         templatePrompt,
         userContent,
         finalPrompt,
+        referenceImages,
       });
 
       sendJson(res, 202, { taskId });
@@ -276,12 +279,18 @@ function createTask(payload) {
       task.size = result.size;
       const completedAt = new Date().toISOString();
       const latencyMs = Date.now() - startedAt;
+      const savedReferences = await persistReferenceImagesToDisk(
+        payload.referenceImages,
+        taskId,
+        completedAt
+      );
       const savedImages = await persistImagesToDisk(result.images, taskId, completedAt);
       const auditId = randomUUID();
       task.auditId = auditId;
       task.completedAt = completedAt;
       task.latencyMs = latencyMs;
       task.savedImages = savedImages.map((item) => item.path);
+      task.savedReferences = savedReferences.map((item) => item.path);
       await writeAuditEntry({
         id: auditId,
         taskId,
@@ -297,6 +306,7 @@ function createTask(payload) {
         promptFinal: payload.finalPrompt || payload.prompt,
         negative: payload.negative || "",
         images: savedImages,
+        references: savedReferences,
       });
     })
     .catch(async (error) => {
@@ -308,6 +318,12 @@ function createTask(payload) {
       task.auditId = auditId;
       task.completedAt = completedAt;
       task.latencyMs = latencyMs;
+      const savedReferences = await persistReferenceImagesToDisk(
+        payload.referenceImages,
+        taskId,
+        completedAt
+      );
+      task.savedReferences = savedReferences.map((item) => item.path);
       await writeAuditEntry({
         id: auditId,
         taskId,
@@ -324,6 +340,7 @@ function createTask(payload) {
         negative: payload.negative || "",
         error: task.error,
         images: [],
+        references: savedReferences,
       });
     });
 
@@ -368,6 +385,40 @@ async function persistImagesToDisk(base64Images, taskId, completedAt) {
       path: path.relative(dataDir, filePath),
       bytes: buffer.byteLength,
       sha256,
+    });
+  }
+  return results;
+}
+
+async function persistReferenceImagesToDisk(referenceImages, taskId, completedAt) {
+  const list = Array.isArray(referenceImages) ? referenceImages : [];
+  if (!list.length) {
+    return [];
+  }
+  const day = (completedAt || new Date().toISOString()).slice(0, 10);
+  const dir = path.join(imagesDir, day);
+  await fs.promises.mkdir(dir, { recursive: true });
+  const results = [];
+  for (let i = 0; i < list.length; i += 1) {
+    const item = list[i];
+    const base64 = String(item?.data || "");
+    const mimeType = String(item?.mimeType || "");
+    if (!base64 || !mimeType) {
+      continue;
+    }
+    const buffer = Buffer.from(base64, "base64");
+    const sha256 = createHash("sha256").update(buffer).digest("hex");
+    const ext = mimeTypeToExt(mimeType);
+    const filename = `${taskId}-ref-${i + 1}.${ext}`;
+    const filePath = path.join(dir, filename);
+    await fs.promises.writeFile(filePath, buffer);
+    results.push({
+      index: i + 1,
+      path: path.relative(dataDir, filePath),
+      bytes: buffer.byteLength,
+      sha256,
+      mimeType,
+      kind: "reference",
     });
   }
   return results;
@@ -431,6 +482,37 @@ function safeDataPath(relPath) {
     return null;
   }
   return resolved;
+}
+
+function normalizeReferenceImages(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const maxRefs = 6;
+  return value
+    .slice(0, maxRefs)
+    .map((item) => {
+      const data = String(item?.data || "").trim();
+      const mimeType = String(item?.mimeType || item?.mime_type || "").trim();
+      if (!data || !mimeType) {
+        return null;
+      }
+      return { data, mimeType };
+    })
+    .filter(Boolean);
+}
+
+function mimeTypeToExt(mimeType) {
+  if (mimeType.includes("png")) {
+    return "png";
+  }
+  if (mimeType.includes("webp")) {
+    return "webp";
+  }
+  if (mimeType.includes("jpeg") || mimeType.includes("jpg")) {
+    return "jpg";
+  }
+  return "bin";
 }
 
 function parseCookies(cookieHeader) {

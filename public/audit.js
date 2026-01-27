@@ -128,13 +128,14 @@ function buildAuditCard(entry) {
     </details>
   `;
 
-  const images = renderImages(entry.images);
+  const references = renderThumbs(entry.references, "参考图");
+  const images = renderThumbs(entry.images, "生成结果");
 
   const error = entry.error
     ? `<div class="audit-error">错误：${escapeHtml(entry.error)}</div>`
     : "";
 
-  return `${header}${error}${prompts}${images}`;
+  return `${header}${error}${prompts}${references}${images}`;
 }
 
 function renderPrompt(title, value) {
@@ -150,7 +151,7 @@ function renderPrompt(title, value) {
   `;
 }
 
-function renderImages(images) {
+function renderThumbs(images, title) {
   const list = Array.isArray(images) ? images : [];
   if (!list.length) {
     return "";
@@ -174,7 +175,12 @@ function renderImages(images) {
       `;
     })
     .join("");
-  return `<div class="audit-thumbs">${items}</div>`;
+  return `
+    <section class="audit-media">
+      <div class="audit-media__title">${escapeHtml(title)}</div>
+      <div class="audit-thumbs">${items}</div>
+    </section>
+  `;
 }
 
 function formatTime(value) {

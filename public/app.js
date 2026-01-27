@@ -149,6 +149,10 @@ const elements = {
   modelStatus: document.getElementById("model-status"),
   imageGrid: document.getElementById("image-grid"),
   gallerySection: document.getElementById("gallery-section"),
+  referenceAdd: document.getElementById("reference-add"),
+  referenceInput: document.getElementById("reference-input"),
+  referenceGrid: document.getElementById("reference-grid"),
+  referenceTip: document.getElementById("reference-tip"),
   historyGrid: document.getElementById("history-grid"),
   historyRules: document.getElementById("history-rules"),
   clearHistory: document.getElementById("clear-history"),
@@ -165,6 +169,8 @@ const elements = {
 let activeTemplate = templates[0];
 let editorVisible = false;
 let loadingCards = [];
+let referenceImages = [];
+let lastRequestedCount = 2;
 const storageKeys = {
   currentTaskId: "drawthings.currentTaskId",
 };
@@ -240,10 +246,92 @@ function buildPrompt() {
   if (!userText) {
     return "";
   }
+  const referenceNote =
+    referenceImages.length > 0
+      ? "\n\n参考图要求\n- 参考图只用于风格与笔触参考，不要照搬内容\n- 画面内容必须严格依据用户内容"
+      : "";
   if (!templateText) {
-    return userText;
+    return `${userText}${referenceNote}`;
   }
-  return `${templateText}\n\n用户内容\n${userText}`;
+  return `${templateText}${referenceNote}\n\n用户内容\n${userText}`;
+}
+
+function requestedCount() {
+  return referenceImages.length > 0 ? 1 : 2;
+}
+
+function updateReferenceUI() {
+  elements.referenceGrid.innerHTML = "";
+  referenceImages.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "reference-item";
+    card.innerHTML = `
+      <img src="${item.previewUrl}" alt="reference ${index + 1}" />
+      <button type="button" data-index="${index}">移除</button>
+    `;
+    card.querySelector("button").addEventListener("click", () => {
+      removeReference(index);
+    });
+    elements.referenceGrid.appendChild(card);
+  });
+  elements.referenceTip.textContent =
+    referenceImages.length > 0 ? "已添加参考图：将生成 1 张结果。" : "";
+}
+
+function removeReference(index) {
+  const [removed] = referenceImages.splice(index, 1);
+  if (removed?.previewUrl) {
+    URL.revokeObjectURL(removed.previewUrl);
+  }
+  updateReferenceUI();
+}
+
+async function handleReferenceInput(event) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) {
+    return;
+  }
+  const maxRefs = 1;
+  const remaining = Math.max(0, maxRefs - referenceImages.length);
+  const nextFiles = files.slice(0, remaining);
+  const refs = await Promise.all(nextFiles.map(fileToReference));
+  const next = refs.filter(Boolean);
+  if (!next.length) {
+    elements.referenceInput.value = "";
+    return;
+  }
+  referenceImages.forEach((item) => {
+    if (item?.previewUrl) {
+      URL.revokeObjectURL(item.previewUrl);
+    }
+  });
+  referenceImages = [next[0]];
+  elements.referenceInput.value = "";
+  updateReferenceUI();
+}
+
+function fileToReference(file) {
+  return new Promise((resolve) => {
+    if (!file?.type?.startsWith("image/")) {
+      resolve(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || "");
+      const commaIndex = dataUrl.indexOf(",");
+      if (commaIndex === -1) {
+        resolve(null);
+        return;
+      }
+      const data = dataUrl.slice(commaIndex + 1);
+      const mimeType = file.type || "image/png";
+      const previewUrl = URL.createObjectURL(file);
+      resolve({ data, mimeType, previewUrl, name: file.name });
+    };
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
 }
 
 async function handleGenerate(event) {
@@ -251,6 +339,8 @@ async function handleGenerate(event) {
   const templatePrompt = elements.prompt.value.trim();
   const userContent = elements.userContent.value.trim();
   const finalPrompt = buildPrompt();
+  const count = requestedCount();
+  lastRequestedCount = count;
   const payload = {
     prompt: finalPrompt,
     templatePrompt,
@@ -259,7 +349,11 @@ async function handleGenerate(event) {
     negative: elements.negative.value.trim(),
     aspect: elements.aspect.value,
     size: elements.size.value,
-    count: 2,
+    count,
+    referenceImages: referenceImages.map((item) => ({
+      data: item.data,
+      mimeType: item.mimeType,
+    })),
   };
 
   if (!payload.prompt) {
@@ -270,7 +364,7 @@ async function handleGenerate(event) {
   setStatus("正在生成中，请稍候...", "");
   elements.gallerySection.classList.remove("hidden");
   elements.imageGrid.innerHTML = "";
-  showLoadingPlaceholder();
+  showLoadingPlaceholder(count);
 
   try {
     const response = await fetch("/api/tasks", {
@@ -339,13 +433,13 @@ function base64ToBlob(base64, mimeType) {
   return new Blob([bytes], { type: mimeType });
 }
 
-function showLoadingPlaceholder() {
+function showLoadingPlaceholder(count = lastRequestedCount) {
   document.body.classList.add("is-loading");
   if (loadingCards.length) {
     return;
   }
-  const count = 2;
-  for (let i = 0; i < count; i += 1) {
+  const safeCount = Math.max(1, Math.min(2, Number(count) || 1));
+  for (let i = 0; i < safeCount; i += 1) {
     const card = document.createElement("div");
     card.className = "image-card skeleton";
     card.innerHTML = `
@@ -588,6 +682,7 @@ function clearHistory() {
 renderTemplates();
 setActiveTemplate(activeTemplate);
 setModelStatus("gemini-3-pro-image-preview");
+updateReferenceUI();
 openHistoryDb().then(() => {
   loadHistory();
   resumePendingTask();
@@ -598,3 +693,5 @@ elements.reset.addEventListener("click", resetPrompt);
 elements.scrollToForm.addEventListener("click", scrollToForm);
 elements.toggleEditor.addEventListener("click", toggleEditor);
 elements.clearHistory.addEventListener("click", clearHistory);
+elements.referenceAdd.addEventListener("click", () => elements.referenceInput.click());
+elements.referenceInput.addEventListener("change", handleReferenceInput);
