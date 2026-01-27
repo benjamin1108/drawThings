@@ -445,7 +445,7 @@ function pollTask(taskId) {
         renderImages(images);
         saveHistory(images, task);
       }
-      setStatus(`完成生成，模型：${task.model}`);
+      setStatus("完成生成");
       setModelStatus(task.model, task.size);
       localStorage.removeItem(storageKeys.currentTaskId);
       hideLoadingPlaceholder();
