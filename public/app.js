@@ -248,8 +248,14 @@ function buildPrompt() {
 
 async function handleGenerate(event) {
   event.preventDefault();
+  const templatePrompt = elements.prompt.value.trim();
+  const userContent = elements.userContent.value.trim();
+  const finalPrompt = buildPrompt();
   const payload = {
-    prompt: buildPrompt(),
+    prompt: finalPrompt,
+    templatePrompt,
+    userContent,
+    finalPrompt,
     negative: elements.negative.value.trim(),
     aspect: elements.aspect.value,
     size: elements.size.value,

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DrawThings 审计日志</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page audit-page">
+      <header class="hero reveal delay-1">
+        <div>
+          <p class="eyebrow">Admin Only</p>
+          <h1>审计日志</h1>
+          <p class="lead">登录后可查看最近 100 次生成的完整提示词与落盘图片。</p>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="composer reveal delay-2" id="login-panel">
+          <div class="section-title">
+            <h2>管理员登录</h2>
+          </div>
+          <form id="login-form" class="prompt-form">
+            <label class="field">
+              <span>管理员密码</span>
+              <input id="admin-password" type="password" placeholder="输入 ADMIN_PASSWORD" required />
+            </label>
+            <div class="row actions">
+              <button class="button primary" type="submit">登录</button>
+              <span class="status" id="login-status">需要管理员密码</span>
+            </div>
+          </form>
+        </section>
+
+        <section class="gallery reveal delay-3 hidden" id="audit-panel">
+          <div class="section-title">
+            <h2>最近 100 条日志</h2>
+            <div class="row actions">
+              <button class="button ghost small" type="button" id="refresh-audit">刷新</button>
+              <button class="button ghost small" type="button" id="logout">退出</button>
+            </div>
+          </div>
+          <div class="audit-list" id="audit-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/audit.js"></script>
+  </body>
+</html>

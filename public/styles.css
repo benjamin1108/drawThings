@@ -477,6 +477,154 @@ textarea {
   color: var(--ink);
 }
 
+.audit-page .hero {
+  margin-bottom: 24px;
+}
+
+.audit-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.audit-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 10px 22px var(--shadow);
+}
+
+.audit-card__title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.audit-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.pill {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.pill.ok {
+  border-color: #b8e2c8;
+  background: #e9f8ef;
+}
+
+.pill.error {
+  border-color: #f0b7ab;
+  background: #fdecea;
+}
+
+.pill.pending {
+  border-color: #ead9a3;
+  background: #fff7da;
+}
+
+.audit-block {
+  margin-top: 10px;
+  border-top: 1px dashed var(--line);
+  padding-top: 8px;
+}
+
+.audit-block summary {
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 500;
+  list-style: none;
+}
+
+.audit-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.audit-block__content {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.audit-prompt {
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 8px;
+  background: #fffdf9;
+}
+
+.audit-prompt__title {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.audit-prompt__body {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
+  color: var(--ink);
+  max-height: 220px;
+  overflow: auto;
+}
+
+.audit-thumbs {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.audit-thumb {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+}
+
+.audit-thumb img {
+  width: 100%;
+  display: block;
+}
+
+.audit-thumb__meta {
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.audit-empty {
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.audit-error {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fdecea;
+  border: 1px solid #f0b7ab;
+  color: #b23a27;
+  font-size: 12px;
+}
+
 .fade-in {
   animation: fadeInUp 0.6s ease both;
 }
