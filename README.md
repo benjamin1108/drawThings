@@ -22,6 +22,14 @@ cp .env.example .env
 node src/generate-image.js "A futuristic city at sunrise"
 ```
 
+## UI
+
+Start the local UI server and open the URL it prints:
+
+```bash
+npm run ui
+```
+
 Options:
 - `--out <file>` output path (default `output.png`)
 - `--count <n>` number of images

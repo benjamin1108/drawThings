@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "generate": "node src/generate-image.js"
+    "generate": "node src/generate-image.js",
+    "ui": "node src/server.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5"

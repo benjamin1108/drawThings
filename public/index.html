@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DrawThings UI</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero reveal delay-1">
+        <div>
+          <p class="eyebrow">Gemini Image Studio</p>
+          <h1>DrawThings</h1>
+          <p class="lead">选择模版、快速调整指令、生成草图风格信息图。</p>
+          <div class="hero-actions">
+            <button class="button primary" id="scroll-to-form">开始绘制</button>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card__chip">Active Template</div>
+          <h3 id="active-title">角色</h3>
+          <p id="active-desc">
+            松弛的手绘人物角色，适合故事类信息图或人物介绍页。
+          </p>
+          <div class="hero-tags" id="active-tags"></div>
+        </div>
+      </header>
+
+      <main class="content" id="form-area">
+        <section class="templates reveal delay-2">
+          <div class="section-title">
+            <h2>预置模版</h2>
+            <p>点击卡片即可加载提示词，仍可自由修改。</p>
+          </div>
+          <div class="template-grid" id="template-grid"></div>
+        </section>
+
+        <section class="composer reveal delay-3">
+          <div class="section-title">
+            <h2>提示词编辑</h2>
+            <p>填写用户内容并选择模版即可生成。</p>
+          </div>
+          <form id="prompt-form" class="prompt-form">
+            <label class="field">
+              <span>用户内容</span>
+              <textarea
+                id="user-content"
+                rows="6"
+                placeholder="写下要转成信息图的文字，例如：一页介绍“设计团队协作流程”的要点"
+                required
+              ></textarea>
+            </label>
+            <div class="row actions">
+              <button class="button ghost" type="button" id="toggle-editor">
+                编辑模版提示词
+              </button>
+              <span class="status muted">默认不展示模版内容，点击可编辑。</span>
+            </div>
+            <div class="editor hidden" id="template-editor">
+              <label class="field">
+                <span>模版提示词</span>
+                <textarea id="prompt" rows="12"></textarea>
+              </label>
+              <label class="field">
+                <span>负面提示词（可选）</span>
+                <input id="negative" type="text" placeholder="例如：渐变、3D、强阴影" />
+              </label>
+            </div>
+            <div class="row two">
+              <label class="field">
+                <span>画面比例</span>
+                <select id="aspect">
+                  <option value="16:9">16:9</option>
+                  <option value="4:3">4:3</option>
+                  <option value="1:1">1:1</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>高清尺寸</span>
+                <select id="size">
+                  <option value="2K">2K</option>
+                  <option value="4K">4K</option>
+                </select>
+              </label>
+            </div>
+            <div class="row actions">
+              <button class="button primary" type="submit" id="generate">生成图像</button>
+              <button class="button ghost" type="button" id="reset">重置为模版</button>
+              <span class="status" id="status">准备就绪</span>
+              <span class="status muted" id="model-status">模型：未选择</span>
+            </div>
+          </form>
+        </section>
+
+        <section class="gallery reveal delay-4 hidden" id="gallery-section">
+          <div class="section-title">
+            <h2>生成结果</h2>
+          </div>
+          <div class="image-grid" id="image-grid"></div>
+        </section>
+
+        <section class="history reveal delay-4">
+          <div class="section-title">
+            <div class="section-title__left">
+              <h2>历史图片</h2>
+            </div>
+            <button class="button ghost small" type="button" id="clear-history">
+              清理历史
+            </button>
+          </div>
+          <div class="image-grid history-grid" id="history-grid"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
