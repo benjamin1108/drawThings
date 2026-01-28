@@ -3,7 +3,7 @@ import path from "node:path";
 import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
-import { generateImages } from "./gemini-client.js";
+import { generateImages, generateText } from "./gemini-client.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +20,10 @@ ensureDataDirs();
 const server = createServer(async (req, res) => {
   try {
     const requestUrl = new URL(req.url || "/", "http://localhost");
-    const pathname = requestUrl.pathname;
+    let pathname = requestUrl.pathname;
+    if (pathname.length > 1 && pathname.endsWith("/")) {
+      pathname = pathname.slice(0, -1);
+    }
 
     if (req.method === "POST" && pathname === "/api/tasks") {
       const body = await readJsonBody(req, res);
@@ -57,6 +60,36 @@ const server = createServer(async (req, res) => {
         referenceImages,
       });
 
+      sendJson(res, 202, { taskId });
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/api/ppt") {
+      const body = await readJsonBody(req, res);
+      if (!body) {
+        return;
+      }
+      const userContent = String(body.userContent || "").trim();
+      if (!userContent) {
+        sendJson(res, 400, { error: "User content is required." });
+        return;
+      }
+      const aspect = body.aspect ? String(body.aspect) : "16:9";
+      const size = body.size ? String(body.size) : undefined;
+      const negative = body.negative ? String(body.negative) : undefined;
+      const templatePrompt = body.templatePrompt ? String(body.templatePrompt) : "";
+      const stylePrompt = body.stylePrompt ? String(body.stylePrompt) : "";
+      const styleTitle = body.styleTitle ? String(body.styleTitle) : "";
+      const taskId = createPptTask({
+        userContent,
+        aspect,
+        size,
+        negative,
+        templatePrompt,
+        stylePrompt,
+        styleTitle,
+        model: body.model,
+      });
       sendJson(res, 202, { taskId });
       return;
     }
@@ -347,6 +380,123 @@ function createTask(payload) {
   return taskId;
 }
 
+function createPptTask(payload) {
+  const taskId = randomUUID();
+  const createdAt = new Date().toISOString();
+  const startedAt = Date.now();
+  const outlineModel = "gemini-3-pro-preview";
+  const task = {
+    id: taskId,
+    type: "ppt",
+    status: "pending",
+    createdAt,
+    model: payload.model,
+    size: payload.size,
+    totalSlides: 0,
+    completedSlides: 0,
+    outlineModel,
+  };
+  tasks.set(taskId, task);
+  pruneTasks();
+
+  (async () => {
+    try {
+      const outlinePrompt = buildOutlinePrompt(payload.userContent);
+      const outlineText = await generateText({
+        prompt: outlinePrompt,
+        model: outlineModel,
+      });
+      const outline = parseOutline(outlineText, payload.userContent);
+      const slides = outline.slides || [];
+      task.totalSlides = slides.length;
+      const images = [];
+      for (let i = 0; i < slides.length; i += 1) {
+        const slide = slides[i];
+        const slidePrompt = buildSlidePrompt(payload.stylePrompt, slide);
+        const result = await generateImages({
+          prompt: slidePrompt,
+          count: 1,
+          aspect: payload.aspect,
+          size: payload.size,
+          negative: payload.negative,
+          model: payload.model,
+        });
+        images.push(result.images[0]);
+        task.completedSlides = i + 1;
+        task.model = result.model;
+        task.size = result.size;
+      }
+
+      task.status = "completed";
+      task.images = images;
+      const completedAt = new Date().toISOString();
+      const latencyMs = Date.now() - startedAt;
+      const savedImages = await persistImagesToDisk(images, taskId, completedAt);
+      const auditId = randomUUID();
+      task.auditId = auditId;
+      task.completedAt = completedAt;
+      task.latencyMs = latencyMs;
+      task.savedImages = savedImages.map((item) => item.path);
+      await writeAuditEntry({
+        id: auditId,
+        taskId,
+        type: "ppt",
+        status: "completed",
+        createdAt,
+        completedAt,
+        latencyMs,
+        outlineModel,
+        model: task.model,
+        aspect: payload.aspect,
+        size: task.size,
+        promptTemplate: payload.templatePrompt || "",
+        promptUser: payload.userContent || "",
+        promptFinal: outlineText,
+        negative: payload.negative || "",
+        stylePrompt: payload.stylePrompt || "",
+        styleTitle: payload.styleTitle || "",
+        outline,
+        images: savedImages,
+        references: [],
+      });
+    } catch (error) {
+      task.status = "error";
+      task.error = error?.message ?? String(error);
+      const completedAt = new Date().toISOString();
+      const latencyMs = Date.now() - startedAt;
+      const auditId = randomUUID();
+      task.auditId = auditId;
+      task.completedAt = completedAt;
+      task.latencyMs = latencyMs;
+      await writeAuditEntry({
+        id: auditId,
+        taskId,
+        type: "ppt",
+        status: "error",
+        createdAt,
+        completedAt,
+        latencyMs,
+        outlineModel,
+        model: payload.model,
+        aspect: payload.aspect,
+        size: payload.size,
+        promptTemplate: payload.templatePrompt || "",
+        promptUser: payload.userContent || "",
+        promptFinal: "",
+        negative: payload.negative || "",
+        stylePrompt: payload.stylePrompt || "",
+        styleTitle: payload.styleTitle || "",
+        outline: null,
+        error: task.error,
+        images: [],
+        references: [],
+      });
+    }
+  })();
+
+  return taskId;
+}
+
 function pruneTasks() {
   const maxTasks = 30;
   if (tasks.size <= maxTasks) {
@@ -361,6 +511,54 @@ function pruneTasks() {
       tasks.delete(oldest.id);
     }
   }
+}
+
+function buildOutlinePrompt(userContent) {
+  return `你是一位专业PPT策划，请将“用户内容”拆分为PPT大纲与要点。\n\n要求：\n- 输出严格JSON，不要任何多余文字\n- JSON格式：{\"title\":\"...\",\"slides\":[{\"title\":\"...\",\"bullets\":[\"...\"]}]}\n- slides数量控制在5-8页，内容少时可降到3-5页\n- bullets每页3-5条，中文短句\n\n用户内容：\n${userContent}`.trim();
+}
+
+function parseOutline(text, fallbackContent) {
+  const cleaned = String(text || "").trim();
+  const jsonText = extractJsonBlock(cleaned);
+  if (jsonText) {
+    try {
+      const parsed = JSON.parse(jsonText);
+      if (parsed?.slides?.length) {
+        return parsed;
+      }
+    } catch {
+      // fall through
+    }
+  }
+  return {
+    title: "",
+    slides: [
+      {
+        title: "概览",
+        bullets: [fallbackContent],
+      },
+    ],
+  };
+}
+
+function extractJsonBlock(text) {
+  const fenced = text.match(/```json\s*([\s\S]*?)\s*```/i);
+  if (fenced?.[1]) {
+    return fenced[1];
+  }
+  const first = text.indexOf("{");
+  const last = text.lastIndexOf("}");
+  if (first !== -1 && last !== -1 && last > first) {
+    return text.slice(first, last + 1);
+  }
+  return "";
+}
+
+function buildSlidePrompt(stylePrompt, slide) {
+  const title = slide?.title ? String(slide.title) : "页面标题";
+  const bullets = Array.isArray(slide?.bullets) ? slide.bullets : [];
+  const bulletText = bullets.filter(Boolean).map((item) => `- ${item}`).join("\n");
+  return `${stylePrompt}\n\nPPT页面内容\n标题：${title}\n要点：\n${bulletText}\n\n输出\n- 直接生成符合上述风格的信息图，中文，不需要解释\n- 图片比例16:9`.trim();
 }
 
 function ensureDataDirs() {

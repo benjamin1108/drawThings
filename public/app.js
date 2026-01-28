@@ -43,29 +43,34 @@ const templates = [
   },
   {
     id: "workflow",
-    title: "项目流程",
-    description: "将项目进度与任务节点转成轻量流程图。",
-    tags: ["流程", "节点", "轻量图标"],
+    title: "万物正构",
+    description: "正式版万物绘色，风格克制、字体更规整。",
+    tags: ["正式", "规整", "16:9"],
     aspect: "16:9",
-    prompt: `# 风格规则（流程图向）
+    prompt: `# 风格规则
+
+你是一位擅长 Notion 官方插画风格的信息可视化设计师，将用户内容转化为正式场合可用的信息图。
 
 视觉风格规范（通用）
-- 明快的颜色为主，色彩自由选取，但整体素雅、简约
-- 线条粗细不均匀，像马克笔随手画的质感
-- 笔触松弛、略带抖动，不追求工整
-- 少部分地方填充黑色让整体压实
+- 明快配色为主，色彩自由选取，但整体素雅、简约
+- 颜色对比清晰、易读，不使用渐变或花哨装饰
 
-布局规则
-- 手绘流程图布局，节点数量与名称来自用户内容
-- 用手绘箭头或曲线连接节点
-- 可搭配轻量图标，图标含义来自用户内容
-- 标题与说明尽量简短
+线条与字体
+- 线条稳定、均匀，略有手绘质感但更克制
+- 笔触干净利落，避免明显抖动
+- 文本排版规整，字体呈现正式、清晰、易读
+
+排版
+- 构图清晰、克制，信息层级明确
+- 标题与要点来自用户内容，文字尽量精简
+- 每个要点尽量配一个简洁图示或符号，强化视觉表达
 
 禁止事项
 - 不要彩色渐变或复杂配色
 - 不要粗黑边框或生硬分隔线
 - 不要3D效果、阴影、立体感
 - 不要密集文字堆砌
+- 不要过度涂鸦或稚拙风格
 
 输出
 - 直接生成符合上述风格的信息图，中文，不需要解释
@@ -74,67 +79,15 @@ const templates = [
     negative: "渐变, 3D, 强阴影",
   },
   {
-    id: "comparison",
-    title: "产品对比",
-    description: "双栏对比结构，适合功能对照。",
-    tags: ["对比", "结构", "极简"],
+    id: "ppt",
+    title: "PPT生成",
+    description: "自动拆分大纲并生成多页PPT图片。",
+    tags: ["PPT", "工作流", "16:9"],
     aspect: "16:9",
-    prompt: `# 风格规则（对比向）
+    prompt: `# PPT 工作流
 
-视觉风格规范（通用）
-- 明快的颜色为主，色彩自由选取，但整体素雅、简约
-- 线条粗细不均匀，像马克笔随手画的质感
-- 笔触松弛、略带抖动，不追求工整
-- 少部分地方填充黑色让整体压实
-
-布局规则
-- 左右双栏或上下对照结构
-- 每栏要点来自用户内容，使用中文短句
-- 适量手绘涂鸦图标点缀，但不喧宾夺主
-
-禁止事项
-- 不要彩色渐变或复杂配色
-- 不要粗黑边框或生硬分隔线
-- 不要3D效果、阴影、立体感
-- 不要密集文字堆砌
-
-输出
-- 直接生成符合上述风格的信息图，中文，不需要解释
-- 图片比例16:9
-- 画面内容严格依据用户内容`,
-    negative: "高饱和渐变, 3D, 阴影",
-  },
-  {
-    id: "roadmap",
-    title: "路线图",
-    description: "时间轴布局的里程碑信息图。",
-    tags: ["时间轴", "里程碑", "轻松"],
-    aspect: "16:9",
-    prompt: `# 风格规则（时间轴向）
-
-视觉风格规范（通用）
-- 明快的颜色为主，色彩自由选取，但整体素雅、简约
-- 线条粗细不均匀，像马克笔随手画的质感
-- 笔触松弛、略带抖动，不追求工整
-- 少部分地方填充黑色让整体压实
-
-布局规则
-- 手绘时间轴从左到右或上到下
-- 节点数量与标题来自用户内容
-- 每个节点配简笔图标或小标记
-- 保持大面积留白，节奏舒缓
-
-禁止事项
-- 不要彩色渐变或复杂配色
-- 不要粗黑边框或生硬分隔线
-- 不要3D效果、阴影、立体感
-- 不要密集文字堆砌
-
-输出
-- 直接生成符合上述风格的信息图，中文，不需要解释
-- 图片比例16:9
-- 画面内容严格依据用户内容`,
-    negative: "复杂配色, 阴影, 3D",
+将用户输入的内容拆分为 PPT 大纲与要点，并依照“万物正构”的绘图风格生成多页图片。`,
+    negative: "渐变, 3D, 强阴影",
   },
 ];
 
@@ -209,6 +162,15 @@ function setActiveTemplate(template) {
   elements.prompt.value = template.prompt;
   elements.negative.value = template.negative || "";
   elements.aspect.value = template.aspect || "16:9";
+  if (activeTemplate.id === "ppt") {
+    referenceImages.forEach((item) => {
+      if (item?.previewUrl) {
+        URL.revokeObjectURL(item.previewUrl);
+      }
+    });
+    referenceImages = [];
+    updateReferenceUI();
+  }
   updateActiveCard();
   updateTemplateSelection();
 }
@@ -230,14 +192,18 @@ function setStatus(message, tone) {
   elements.status.style.color = tone === "error" ? "#d6452d" : "";
 }
 
-function setModelStatus(model, size) {
+function setModelStatus(model, size, outlineModel) {
   if (!model) {
     elements.modelStatus.textContent = "模型：未选择";
     return;
   }
-  elements.modelStatus.textContent = size
-    ? `模型：${model} | 尺寸：${size}`
-    : `模型：${model}`;
+  if (outlineModel) {
+    elements.modelStatus.textContent = size
+      ? `模型：${outlineModel} → ${model} | 尺寸：${size}`
+      : `模型：${outlineModel} → ${model}`;
+    return;
+  }
+  elements.modelStatus.textContent = size ? `模型：${model} | 尺寸：${size}` : `模型：${model}`;
 }
 
 function buildPrompt() {
@@ -339,6 +305,7 @@ async function handleGenerate(event) {
   const templatePrompt = elements.prompt.value.trim();
   const userContent = elements.userContent.value.trim();
   const finalPrompt = buildPrompt();
+  const styleTemplate = templates.find((item) => item.id === "workflow");
   const count = requestedCount();
   lastRequestedCount = count;
   const payload = {
@@ -364,10 +331,17 @@ async function handleGenerate(event) {
   setStatus("正在生成中，请稍候...", "");
   elements.gallerySection.classList.remove("hidden");
   elements.imageGrid.innerHTML = "";
-  showLoadingPlaceholder(count);
+  showLoadingPlaceholder(activeTemplate.id === "ppt" ? 1 : count);
 
   try {
-    const response = await fetch("/api/tasks", {
+    const endpoint = activeTemplate.id === "ppt" ? "/api/ppt" : "/api/tasks";
+    if (activeTemplate.id === "ppt") {
+      payload.count = 1;
+      payload.referenceImages = [];
+      payload.stylePrompt = styleTemplate?.prompt || "";
+      payload.styleTitle = styleTemplate?.title || "";
+    }
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -489,7 +463,9 @@ function createImageCard(base64, index = 0) {
     meta.textContent = `尺寸: ${width} x ${height} | 大小: ${mb}MB`;
   });
   link.addEventListener("click", () => {
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    const freshUrl = URL.createObjectURL(blob);
+    link.href = freshUrl;
+    setTimeout(() => URL.revokeObjectURL(freshUrl), 10_000);
   });
   return card;
 }
@@ -515,7 +491,9 @@ function createImageCardFromBlob(blob, index = 0) {
     meta.textContent = `尺寸: ${width} x ${height} | 大小: ${mb}MB`;
   });
   link.addEventListener("click", () => {
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    const freshUrl = URL.createObjectURL(blob);
+    link.href = freshUrl;
+    setTimeout(() => URL.revokeObjectURL(freshUrl), 10_000);
   });
   return card;
 }
@@ -530,7 +508,12 @@ function pollTask(taskId) {
     })
     .then((task) => {
       if (task.status === "pending") {
-        setStatus("生成中，请稍候...", "");
+        if (task.type === "ppt" && task.totalSlides) {
+          const done = task.completedSlides || 0;
+          setStatus(`正在生成第 ${Math.min(done + 1, task.totalSlides)} / ${task.totalSlides} 页...`, "");
+        } else {
+          setStatus("生成中，请稍候...", "");
+        }
         setTimeout(() => pollTask(taskId), 1200);
         return;
       }
@@ -546,7 +529,7 @@ function pollTask(taskId) {
         saveHistory(images, task);
       }
       setStatus("完成生成");
-      setModelStatus(task.model, task.size);
+      setModelStatus(task.model, task.size, task.outlineModel);
       localStorage.removeItem(storageKeys.currentTaskId);
       hideLoadingPlaceholder();
     })

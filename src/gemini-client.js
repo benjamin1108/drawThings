@@ -94,6 +94,53 @@ export async function generateImages({
   };
 }
 
+export async function generateText({
+  prompt,
+  model,
+  baseUrl,
+  apiKey,
+}) {
+  const resolvedPrompt = String(prompt || "").trim();
+  if (!resolvedPrompt) {
+    throw new Error("Missing prompt.");
+  }
+  const resolvedApiKey = apiKey || process.env.GEMINI_API_KEY;
+  if (!resolvedApiKey) {
+    throw new Error("Missing GEMINI_API_KEY in .env.");
+  }
+  const resolvedModel = model || process.env.GEMINI_TEXT_MODEL || "gemini-3-pro-preview";
+  const resolvedBaseUrl =
+    baseUrl ||
+    process.env.GEMINI_BASE_URL ||
+    "https://generativelanguage.googleapis.com/v1beta";
+  const useV1 = isV1Endpoint(resolvedBaseUrl);
+  const responseModalities = ["TEXT"];
+  const body = buildTextRequestBody({
+    prompt: resolvedPrompt,
+    responseModalities,
+    useV1,
+  });
+
+  const response = await requestWithFallback({
+    apiKey: resolvedApiKey,
+    model: resolvedModel,
+    baseUrl: resolvedBaseUrl,
+    body,
+  });
+  if (!response?.ok) {
+    const errorText = response ? await response.text() : "";
+    const statusText = response ? `${response.status} ${response.statusText}` : "No response";
+    const details = errorText ? `\n${errorText}` : "";
+    throw new Error(`API request failed: ${statusText}${details}`);
+  }
+  const data = await response.json();
+  const text = extractText(data);
+  if (!text) {
+    throw new Error("No text returned.");
+  }
+  return text;
+}
+
 function normalizeImageSize(size) {
   if (!size) {
     return undefined;
@@ -123,6 +170,29 @@ function normalizeReferenceImages(referenceImages) {
       return { data, mimeType };
     })
     .filter(Boolean);
+}
+
+function buildTextRequestBody({ prompt, responseModalities, useV1 }) {
+  const contents = [
+    {
+      role: "user",
+      parts: [{ text: prompt }],
+    },
+  ];
+  if (useV1) {
+    return {
+      contents,
+      generation_config: {
+        response_modalities: responseModalities,
+      },
+    };
+  }
+  return {
+    contents,
+    generationConfig: {
+      responseModalities,
+    },
+  };
 }
 
 function buildRequestBody({
@@ -190,6 +260,26 @@ function buildRequestBody({
     }
   }
   return { contents, generationConfig };
+}
+
+function extractText(payload) {
+  if (Array.isArray(payload?.candidates)) {
+    for (const candidate of payload.candidates) {
+      const parts = candidate?.content?.parts ?? [];
+      for (const part of parts) {
+        if (typeof part?.text === "string") {
+          return part.text;
+        }
+      }
+    }
+  }
+  if (Array.isArray(payload?.generatedText)) {
+    const value = payload.generatedText.find((item) => item?.text)?.text;
+    if (value) {
+      return value;
+    }
+  }
+  return "";
 }
 
 function extractImages(payload) {
