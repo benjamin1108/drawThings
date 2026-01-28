@@ -93,6 +93,10 @@ function renderAudit(entries) {
     card.className = "audit-card fade-in";
     card.style.animationDelay = `${index * 0.03}s`;
     card.innerHTML = buildAuditCard(entry);
+    const loadButton = card.querySelector("[data-load-images]");
+    if (loadButton) {
+      loadButton.addEventListener("click", () => loadImagesForCard(card));
+    }
     elements.auditList.appendChild(card);
   });
 }
@@ -135,7 +139,13 @@ function buildAuditCard(entry) {
     ? `<div class="audit-error">错误：${escapeHtml(entry.error)}</div>`
     : "";
 
-  return `${header}${error}${prompts}${references}${images}`;
+  const controls = `
+    <div class="audit-controls">
+      <button class="button ghost small" type="button" data-load-images>加载图片</button>
+    </div>
+  `;
+
+  return `${header}${error}${prompts}${controls}${references}${images}`;
 }
 
 function renderPrompt(title, value) {
@@ -159,19 +169,19 @@ function renderThumbs(images, title) {
   const items = list
     .map((img) => {
       const path = img?.path ? String(img.path) : "";
-      const src = path ? `/api/audit-image?path=${encodeURIComponent(path)}` : "";
       const bytes = Number(img?.bytes || 0);
       const mb = bytes > 0 ? `${(bytes / (1024 * 1024)).toFixed(2)}MB` : "-";
       const sha = img?.sha256 ? String(img.sha256).slice(0, 16) : "";
+      const safePath = encodeURIComponent(path);
       return `
-        <a class="audit-thumb" href="${src}" target="_blank" rel="noreferrer">
-          <img src="${src}" alt="audit image" loading="lazy" />
+        <div class="audit-thumb" data-path="${safePath}">
+          <div class="audit-thumb__placeholder">未加载</div>
           <div class="audit-thumb__meta">
             <span>#${escapeHtml(img?.index || "-")}</span>
             <span>${escapeHtml(mb)}</span>
             <span>${escapeHtml(sha)}</span>
           </div>
-        </a>
+        </div>
       `;
     })
     .join("");
@@ -181,6 +191,34 @@ function renderThumbs(images, title) {
       <div class="audit-thumbs">${items}</div>
     </section>
   `;
+}
+
+function loadImagesForCard(card) {
+  const thumbNodes = card.querySelectorAll(".audit-thumb");
+  thumbNodes.forEach((thumb) => {
+    const encodedPath = thumb.dataset.path;
+    if (!encodedPath) {
+      return;
+    }
+    if (thumb.querySelector("img")) {
+      return;
+    }
+    const src = `/api/audit-image?path=${encodedPath}`;
+    const link = document.createElement("a");
+    link.href = src;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    const img = document.createElement("img");
+    img.src = src;
+    img.loading = "lazy";
+    img.alt = "audit image";
+    link.appendChild(img);
+    const placeholder = thumb.querySelector(".audit-thumb__placeholder");
+    if (placeholder) {
+      placeholder.remove();
+    }
+    thumb.insertBefore(link, thumb.firstChild);
+  });
 }
 
 function formatTime(value) {

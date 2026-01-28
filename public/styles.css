@@ -676,6 +676,18 @@ textarea {
   color: inherit;
 }
 
+.audit-thumb__placeholder {
+  padding: 24px 10px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  background: #fff7ef;
+}
+
+.audit-thumb a {
+  display: block;
+}
+
 .audit-thumb img {
   width: 100%;
   display: block;
