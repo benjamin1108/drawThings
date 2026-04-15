@@ -46,8 +46,11 @@
               </div>
               <img
                 class="active-panel__image"
+                id="active-panel-image"
                 src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=900&q=80"
                 alt="抽象色彩参考"
+                role="button"
+                tabindex="0"
               />
             </div>
 
@@ -166,6 +169,15 @@
           <div class="image-grid history-grid" id="history-grid"></div>
         </section>
       </main>
+    </div>
+
+    <div class="image-lightbox hidden" id="image-lightbox" aria-hidden="true">
+      <button class="image-lightbox__backdrop" type="button" aria-label="关闭预览"></button>
+      <figure class="image-lightbox__content">
+        <button class="image-lightbox__close" type="button" aria-label="关闭预览">关闭</button>
+        <img id="lightbox-image" src="" alt="风格样图放大预览" />
+        <figcaption id="lightbox-caption"></figcaption>
+      </figure>
     </div>
 
     <script src="/app.js"></script>

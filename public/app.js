@@ -24,7 +24,7 @@ const templates = [
     id: "character",
     title: "万物绘色",
     description: "通用风格规则，万物皆可手绘。",
-    tags: ["人物", "松弛线稿", "16:9"],
+    tags: ["人物", "松弛线稿"],
     aspect: "16:9",
     prompt: `# 风格规则
 
@@ -66,7 +66,7 @@ const templates = [
     id: "cyber-neon-flow",
     title: "赛博霓虹数据流",
     description: "深黑背景、霓虹数据线和 HUD 界面，适合科技日报与趋势解读。",
-    tags: ["赛博朋克", "霓虹", "9:16"],
+    tags: ["赛博朋克", "霓虹"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "赛博霓虹数据流",
@@ -78,7 +78,7 @@ const templates = [
     id: "holographic-glass-ui",
     title: "全息玻璃界面",
     description: "磨砂玻璃、蓝色光粒与未来 FUI，适合产品架构和技术说明。",
-    tags: ["全息", "玻璃拟态", "9:16"],
+    tags: ["全息", "玻璃拟态"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "全息玻璃界面",
@@ -90,7 +90,7 @@ const templates = [
     id: "minimal-dark-mode",
     title: "超极简暗黑模式",
     description: "纯黑留白、金白细线和克制信息流，适合高端摘要页。",
-    tags: ["极简", "暗黑", "9:16"],
+    tags: ["极简", "暗黑"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "超极简暗黑模式",
@@ -102,7 +102,7 @@ const templates = [
     id: "c4d-crystal-geometry",
     title: "C4D几何晶体",
     description: "半透明低多边形晶体与柔和内光，适合概念拆解。",
-    tags: ["C4D", "晶体", "9:16"],
+    tags: ["C4D", "晶体"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "C4D几何晶体",
@@ -114,7 +114,7 @@ const templates = [
     id: "swiss-grid",
     title: "瑞士极简网格",
     description: "严格网格、黑白粗体和理性留白，适合报告摘要。",
-    tags: ["瑞士风格", "网格", "9:16"],
+    tags: ["瑞士风格", "网格"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "瑞士极简网格",
@@ -126,7 +126,7 @@ const templates = [
     id: "corporate-flat",
     title: "当代企业扁平",
     description: "深色企业背景、几何图标和中心图表，适合业务说明。",
-    tags: ["企业", "扁平", "9:16"],
+    tags: ["企业", "扁平"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "当代企业扁平",
@@ -138,7 +138,7 @@ const templates = [
     id: "ceramic-relief",
     title: "高端陶瓷浮雕",
     description: "哑光白陶瓷与香槟金线条，适合品牌级概念介绍。",
-    tags: ["陶瓷", "浮雕", "9:16"],
+    tags: ["陶瓷", "浮雕"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "高端陶瓷浮雕",
@@ -150,7 +150,7 @@ const templates = [
     id: "paper-cut-relief",
     title: "多层纸艺浮雕",
     description: "纸张堆叠、真实阴影和层次模块，适合教育与故事类内容。",
-    tags: ["纸艺", "浮雕", "9:16"],
+    tags: ["纸艺", "浮雕"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "多层纸艺浮雕",
@@ -162,7 +162,7 @@ const templates = [
     id: "vintage-pen-manuscript",
     title: "复古钢笔手稿",
     description: "羊皮纸、蚀刻线稿和手稿标注，适合历史脉络与知识科普。",
-    tags: ["复古", "手稿", "9:16"],
+    tags: ["复古", "手稿"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "复古钢笔手稿",
@@ -174,7 +174,7 @@ const templates = [
     id: "abstract-fluid-art",
     title: "抽象流体艺术",
     description: "液态玻璃和丝绸渐变，适合创意概念和品牌故事。",
-    tags: ["流体", "艺术", "9:16"],
+    tags: ["流体", "艺术"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "抽象流体艺术",
@@ -186,7 +186,7 @@ const templates = [
     id: "memphis-pop",
     title: "孟菲斯几何波普",
     description: "亮黄、电光蓝、粉红撞色与80年代图案，适合轻快内容。",
-    tags: ["孟菲斯", "波普", "9:16"],
+    tags: ["孟菲斯", "波普"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "孟菲斯几何波普",
@@ -198,7 +198,7 @@ const templates = [
     id: "industrial-blueprint",
     title: "工业蓝图设计",
     description: "蓝底白线、CAD 标注和技术网格，适合工程与技术流程。",
-    tags: ["蓝图", "工业", "9:16"],
+    tags: ["蓝图", "工业"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "工业蓝图设计",
@@ -210,7 +210,7 @@ const templates = [
     id: "eco-watercolor",
     title: "生态水彩渲染",
     description: "水彩晕染、叶脉藤蔓和自然笔触，适合生态与健康主题。",
-    tags: ["水彩", "生态", "9:16"],
+    tags: ["水彩", "生态"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "生态水彩渲染",
@@ -222,7 +222,7 @@ const templates = [
     id: "chalkboard-sketch",
     title: "黑板粉笔手绘",
     description: "黑板纹理、粉笔涂鸦和课堂式模块，适合知识讲解。",
-    tags: ["黑板", "粉笔", "9:16"],
+    tags: ["黑板", "粉笔"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "黑板粉笔手绘",
@@ -234,7 +234,7 @@ const templates = [
     id: "clay-cute-3d",
     title: "粘土拟物化Q版",
     description: "圆润 3D 粘土字和糖果配色，适合轻松产品介绍。",
-    tags: ["粘土", "Q版", "9:16"],
+    tags: ["粘土", "Q版"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "粘土拟物化Q版",
@@ -246,7 +246,7 @@ const templates = [
     id: "gold-emboss-texture",
     title: "烫金浮雕纹理",
     description: "深色哑光、金色浮雕和皮革绒面纹理，适合高端总结页。",
-    tags: ["烫金", "奢华", "9:16"],
+    tags: ["烫金", "奢华"],
     aspect: "9:16",
     prompt: makeInfographicPrompt(
       "烫金浮雕纹理",
@@ -278,6 +278,10 @@ const elements = {
   activeTitle: document.getElementById("active-title"),
   activeDesc: document.getElementById("active-desc"),
   activeTags: document.getElementById("active-tags"),
+  activePanelImage: document.getElementById("active-panel-image"),
+  imageLightbox: document.getElementById("image-lightbox"),
+  lightboxImage: document.getElementById("lightbox-image"),
+  lightboxCaption: document.getElementById("lightbox-caption"),
   scrollToForm: document.getElementById("scroll-to-form"),
   reset: document.getElementById("reset"),
   toggleEditor: document.getElementById("toggle-editor"),
@@ -299,6 +303,7 @@ const dbState = {
   ready: null,
 };
 const HISTORY_LIMIT = 12;
+const showcaseBasePath = "/assets/style-showcase/2026-04-15";
 
 function renderTemplates() {
   elements.templateGrid.innerHTML = "";
@@ -347,6 +352,40 @@ function updateActiveCard() {
     span.textContent = tag;
     elements.activeTags.appendChild(span);
   });
+  const previewPath = stylePreviewPath(activeTemplate);
+  if (elements.activePanelImage) {
+    elements.activePanelImage.src = previewPath;
+    elements.activePanelImage.alt = `${activeTemplate.title} 样图`;
+    elements.activePanelImage.title = "点击放大样图";
+  }
+}
+
+function stylePreviewPath(template) {
+  return `${showcaseBasePath}/${template.id}-16x9.png`;
+}
+
+function openImageLightbox() {
+  if (!elements.imageLightbox || !elements.lightboxImage) {
+    return;
+  }
+  const previewPath = stylePreviewPath(activeTemplate);
+  elements.lightboxImage.src = previewPath;
+  elements.lightboxImage.alt = `${activeTemplate.title} 样图放大预览`;
+  if (elements.lightboxCaption) {
+    elements.lightboxCaption.textContent = activeTemplate.title;
+  }
+  elements.imageLightbox.classList.remove("hidden");
+  elements.imageLightbox.setAttribute("aria-hidden", "false");
+  document.body.classList.add("lightbox-open");
+}
+
+function closeImageLightbox() {
+  if (!elements.imageLightbox) {
+    return;
+  }
+  elements.imageLightbox.classList.add("hidden");
+  elements.imageLightbox.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("lightbox-open");
 }
 
 function setStatus(message, tone) {
@@ -867,3 +906,27 @@ if (elements.toggleEditor) {
 elements.clearHistory.addEventListener("click", clearHistory);
 elements.referenceAdd.addEventListener("click", () => elements.referenceInput.click());
 elements.referenceInput.addEventListener("change", handleReferenceInput);
+if (elements.activePanelImage) {
+  elements.activePanelImage.addEventListener("click", openImageLightbox);
+  elements.activePanelImage.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openImageLightbox();
+    }
+  });
+}
+if (elements.imageLightbox) {
+  elements.imageLightbox.addEventListener("click", (event) => {
+    if (
+      event.target.classList.contains("image-lightbox__backdrop") ||
+      event.target.classList.contains("image-lightbox__close")
+    ) {
+      closeImageLightbox();
+    }
+  });
+}
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeImageLightbox();
+  }
+});
