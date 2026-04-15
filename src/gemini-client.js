@@ -24,8 +24,9 @@ export async function generateImages({
 
   const defaultModel = "gemini-3-pro-image-preview";
   const resolvedSize = normalizeImageSize(size);
-  let resolvedModel = model || process.env.GEMINI_MODEL || defaultModel;
-  if (resolvedSize && !model) {
+  const envModels = parseModelList(process.env.GEMINI_MODEL);
+  let resolvedModel = model || envModels[1] || envModels[0] || defaultModel;
+  if (resolvedSize && !model && !envModels.length) {
     resolvedModel = "gemini-3-pro-image-preview";
   }
   const resolvedBaseUrl =
@@ -154,6 +155,20 @@ function normalizeImageSize(size) {
     return `${match[1]}K`;
   }
   return trimmed;
+}
+
+function parseModelList(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return [];
+  }
+  const withoutBrackets = raw.startsWith("[") && raw.endsWith("]")
+    ? raw.slice(1, -1)
+    : raw;
+  return withoutBrackets
+    .split(",")
+    .map((item) => item.trim().replace(/^["']|["']$/g, ""))
+    .filter(Boolean);
 }
 
 function normalizeReferenceImages(referenceImages) {

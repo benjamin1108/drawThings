@@ -46,6 +46,7 @@ const server = createServer(async (req, res) => {
       const finalPrompt = body.finalPrompt ? String(body.finalPrompt) : prompt;
       const referenceImages = normalizeReferenceImages(body.referenceImages);
       const desiredCount = referenceImages.length > 0 ? 1 : count;
+      const model = resolveImageModel(body.modelMode, body.model);
 
       const taskId = createTask({
         prompt: finalPrompt,
@@ -53,7 +54,7 @@ const server = createServer(async (req, res) => {
         aspect,
         negative,
         size,
-        model: body.model,
+        model,
         templatePrompt,
         userContent,
         finalPrompt,
@@ -80,6 +81,7 @@ const server = createServer(async (req, res) => {
       const templatePrompt = body.templatePrompt ? String(body.templatePrompt) : "";
       const stylePrompt = body.stylePrompt ? String(body.stylePrompt) : "";
       const styleTitle = body.styleTitle ? String(body.styleTitle) : "";
+      const model = resolveImageModel(body.modelMode, body.model);
       const taskId = createPptTask({
         userContent,
         aspect,
@@ -88,7 +90,7 @@ const server = createServer(async (req, res) => {
         templatePrompt,
         stylePrompt,
         styleTitle,
-        model: body.model,
+        model,
       });
       sendJson(res, 202, { taskId });
       return;
@@ -288,6 +290,39 @@ function clampNumber(value, min, max, fallback) {
     return fallback;
   }
   return Math.min(Math.max(num, min), max);
+}
+
+function resolveImageModel(modelMode, explicitModel) {
+  const requestedModel = String(explicitModel || "").trim();
+  if (requestedModel) {
+    return requestedModel;
+  }
+  const models = parseModelList(process.env.GEMINI_MODEL);
+  if (!models.length) {
+    return undefined;
+  }
+  const mode = String(modelMode || "").trim().toLowerCase();
+  if (mode === "speed") {
+    return models[0];
+  }
+  if (mode === "quality") {
+    return models[1] || models[0];
+  }
+  return models[1] || models[0];
+}
+
+function parseModelList(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return [];
+  }
+  const withoutBrackets = raw.startsWith("[") && raw.endsWith("]")
+    ? raw.slice(1, -1)
+    : raw;
+  return withoutBrackets
+    .split(",")
+    .map((item) => item.trim().replace(/^["']|["']$/g, ""))
+    .filter(Boolean);
 }
 
 function createTask(payload) {

@@ -8,106 +8,148 @@
   </head>
   <body>
     <div class="page">
-      <header class="hero reveal delay-1">
-        <div>
-          <p class="eyebrow">Gemini Image Studio</p>
-          <h1>DrawThings</h1>
-          <p class="lead">选择模版、快速调整指令、生成草图风格信息图。</p>
-          <div class="hero-actions">
-            <button class="button primary" id="scroll-to-form">开始绘制</button>
-            <a class="button ghost small" href="/audit.html">管理</a>
+      <header class="topbar reveal delay-1">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <div>
+            <p class="eyebrow">Gemini Image Studio</p>
+            <h1>DrawThings</h1>
           </div>
         </div>
-        <div class="hero-card">
-          <div class="hero-card__chip">Active Template</div>
-          <h3 id="active-title">角色</h3>
-          <p id="active-desc">
-            松弛的手绘人物角色，适合故事类信息图或人物介绍页。
-          </p>
-          <div class="hero-tags" id="active-tags"></div>
+        <div class="topbar-actions">
+          <button class="button ghost" id="scroll-to-form">开始绘制</button>
+          <a class="button ghost small" href="/audit.html">管理</a>
         </div>
       </header>
 
       <main class="content" id="form-area">
-        <section class="templates reveal delay-2">
-          <div class="section-title">
-            <h2>预置模版</h2>
-            <p>点击卡片即可加载提示词，仍可自由修改。</p>
-          </div>
-          <div class="template-grid" id="template-grid"></div>
-        </section>
-
-        <section class="composer reveal delay-3">
-          <div class="section-title">
-            <h2>提示词编辑</h2>
-            <p>填写用户内容并选择模版即可生成。</p>
-          </div>
-          <form id="prompt-form" class="prompt-form">
-            <label class="field">
-              <span>用户内容</span>
-              <textarea
-                id="user-content"
-                rows="6"
-                placeholder="写下要转成信息图的文字，例如：一页介绍“设计团队协作流程”的要点"
-                required
-              ></textarea>
-            </label>
-            <div class="reference field">
-              <div class="reference__header">
-                <span>参考图（可选）</span>
-                <button class="button ghost small" type="button" id="reference-add">
-                  添加参考图
-                </button>
+        <section class="workspace reveal delay-2">
+          <aside class="templates">
+            <div class="section-title">
+              <div>
+                <h2>风格库</h2>
+                <p>选择一种信息图视觉语言。</p>
               </div>
-              <input id="reference-input" type="file" accept="image/*" hidden />
-              <div class="reference-grid" id="reference-grid"></div>
-              <div class="reference-tip" id="reference-tip"></div>
             </div>
-            <div class="row actions">
-              <button class="button ghost" type="button" id="toggle-editor">
-                编辑模版提示词
-              </button>
-              <span class="status muted">默认不展示模版内容，点击可编辑。</span>
+            <div class="template-grid" id="template-grid"></div>
+          </aside>
+
+          <section class="composer reveal delay-3">
+            <div class="active-panel">
+              <div>
+                <p class="eyebrow">Active Template</p>
+                <h2 id="active-title">万物绘色</h2>
+                <p id="active-desc">
+                  通用风格规则，万物皆可手绘。
+                </p>
+                <div class="hero-tags" id="active-tags"></div>
+              </div>
+              <img
+                class="active-panel__image"
+                src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=900&q=80"
+                alt="抽象色彩参考"
+              />
             </div>
-            <div class="editor hidden" id="template-editor">
+
+            <div class="section-title composer-title">
+              <div>
+                <h2>生成面板</h2>
+                <p>填入内容，保留必要信息，直接生成竖版信息图。</p>
+              </div>
+              <div class="model-switch">
+                <span class="model-switch__label">模型</span>
+                <div class="model-toggle" role="radiogroup" aria-label="模型策略">
+                  <input
+                    id="model-speed"
+                    type="radio"
+                    name="model-mode"
+                    value="speed"
+                  />
+                  <label for="model-speed">快</label>
+                  <input
+                    id="model-quality"
+                    type="radio"
+                    name="model-mode"
+                    value="quality"
+                    checked
+                  />
+                  <label for="model-quality">质</label>
+                  <span class="model-toggle__thumb" aria-hidden="true"></span>
+                </div>
+              </div>
+            </div>
+
+            <form id="prompt-form" class="prompt-form">
               <label class="field">
-                <span>模版提示词</span>
-                <textarea id="prompt" rows="12"></textarea>
+                <span>用户内容</span>
+                <textarea
+                  id="user-content"
+                  rows="6"
+                  placeholder="写下要转成信息图的文字，例如：一页介绍“设计团队协作流程”的要点"
+                  required
+                ></textarea>
               </label>
-              <label class="field">
-                <span>负面提示词（可选）</span>
-                <input id="negative" type="text" placeholder="例如：渐变、3D、强阴影" />
-              </label>
-            </div>
-            <div class="row two">
-              <label class="field">
-                <span>画面比例</span>
-                <select id="aspect">
-                  <option value="16:9">16:9</option>
-                  <option value="4:3">4:3</option>
-                  <option value="1:1">1:1</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>高清尺寸</span>
-                <select id="size">
-                  <option value="2K">2K</option>
-                  <option value="4K">4K</option>
-                </select>
-              </label>
-            </div>
-            <div class="row actions">
-              <button class="button primary" type="submit" id="generate">生成图像</button>
-              <button class="button ghost" type="button" id="reset">重置为模版</button>
-              <span class="status" id="status">准备就绪</span>
-              <span class="status muted" id="model-status">模型：未选择</span>
-            </div>
-          </form>
+              <div class="reference field">
+                <div class="reference__header">
+                  <span>参考图（可选）</span>
+                  <button class="button ghost small" type="button" id="reference-add">
+                    添加参考图
+                  </button>
+                </div>
+                <input id="reference-input" type="file" accept="image/*" hidden />
+                <div class="reference-grid" id="reference-grid"></div>
+                <div class="reference-tip" id="reference-tip"></div>
+              </div>
+              <div class="row actions">
+                <button class="button ghost" type="button" id="toggle-editor">
+                  编辑模版提示词
+                </button>
+                <span class="status muted">默认不展示模版内容，点击可编辑。</span>
+              </div>
+              <div class="editor hidden" id="template-editor">
+                <label class="field">
+                  <span>模版提示词</span>
+                  <textarea id="prompt" rows="12"></textarea>
+                </label>
+                <label class="field">
+                  <span>负面提示词（可选）</span>
+                  <input id="negative" type="text" placeholder="例如：渐变、3D、强阴影" />
+                </label>
+              </div>
+              <div class="row two">
+                <label class="field">
+                  <span>画面比例</span>
+                  <select id="aspect">
+                    <option value="9:16">9:16</option>
+                    <option value="16:9">16:9</option>
+                    <option value="4:3">4:3</option>
+                    <option value="1:1">1:1</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>高清尺寸</span>
+                  <select id="size">
+                    <option value="2K">2K</option>
+                    <option value="4K">4K</option>
+                  </select>
+                </label>
+              </div>
+              <div class="row actions">
+                <button class="button primary" type="submit" id="generate">生成图像</button>
+                <button class="button ghost" type="button" id="reset">重置为模版</button>
+                <span class="status" id="status">准备就绪</span>
+                <span class="status muted" id="model-status">模型：未选择</span>
+              </div>
+            </form>
+          </section>
         </section>
 
         <section class="gallery reveal delay-4 hidden" id="gallery-section">
           <div class="section-title">
-            <h2>生成结果</h2>
+            <div>
+              <h2>生成结果</h2>
+              <p>最新生成的图片会出现在这里。</p>
+            </div>
           </div>
           <div class="image-grid" id="image-grid"></div>
         </section>

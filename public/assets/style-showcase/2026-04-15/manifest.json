@@ -1,0 +1,151 @@
+{
+  "generatedAt": "2026-04-15T14:45:00.319Z",
+  "promptDate": "2026-04-15",
+  "modelMode": "speed",
+  "model": "gemini-3.1-flash-image-preview",
+  "size": "2K",
+  "outDir": "public/assets/style-showcase/2026-04-15",
+  "items": [
+    {
+      "id": "character",
+      "title": "万物绘色",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/character-16x9.png",
+      "bytes": 2803420,
+      "skipped": true
+    },
+    {
+      "id": "cyber-neon-flow",
+      "title": "赛博霓虹数据流",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/cyber-neon-flow-16x9.png",
+      "bytes": 3085590,
+      "skipped": true
+    },
+    {
+      "id": "holographic-glass-ui",
+      "title": "全息玻璃界面",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/holographic-glass-ui-16x9.png",
+      "bytes": 2980238,
+      "skipped": true
+    },
+    {
+      "id": "minimal-dark-mode",
+      "title": "超极简暗黑模式",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/minimal-dark-mode-16x9.png",
+      "bytes": 2489918,
+      "skipped": true
+    },
+    {
+      "id": "c4d-crystal-geometry",
+      "title": "C4D几何晶体",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/c4d-crystal-geometry-16x9.png",
+      "bytes": 2754857,
+      "skipped": true
+    },
+    {
+      "id": "swiss-grid",
+      "title": "瑞士极简网格",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/swiss-grid-16x9.png",
+      "bytes": 2971983,
+      "skipped": true
+    },
+    {
+      "id": "corporate-flat",
+      "title": "当代企业扁平",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/corporate-flat-16x9.png",
+      "bytes": 3013134,
+      "skipped": true
+    },
+    {
+      "id": "paper-cut-relief",
+      "title": "多层纸艺浮雕",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/paper-cut-relief-16x9.png",
+      "bytes": 3313929,
+      "skipped": true
+    },
+    {
+      "id": "vintage-pen-manuscript",
+      "title": "复古钢笔手稿",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/vintage-pen-manuscript-16x9.png",
+      "bytes": 4023817,
+      "skipped": true
+    },
+    {
+      "id": "abstract-fluid-art",
+      "title": "抽象流体艺术",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/abstract-fluid-art-16x9.png",
+      "bytes": 3156952,
+      "skipped": true
+    },
+    {
+      "id": "memphis-pop",
+      "title": "孟菲斯几何波普",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/memphis-pop-16x9.png",
+      "bytes": 3739883,
+      "skipped": true
+    },
+    {
+      "id": "industrial-blueprint",
+      "title": "工业蓝图设计",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/industrial-blueprint-16x9.png",
+      "bytes": 3457723,
+      "skipped": true
+    },
+    {
+      "id": "eco-watercolor",
+      "title": "生态水彩渲染",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/eco-watercolor-16x9.png",
+      "bytes": 3478838,
+      "skipped": true
+    },
+    {
+      "id": "chalkboard-sketch",
+      "title": "黑板粉笔手绘",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/chalkboard-sketch-16x9.png",
+      "bytes": 3634500,
+      "skipped": true
+    },
+    {
+      "id": "clay-cute-3d",
+      "title": "粘土拟物化Q版",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/clay-cute-3d-16x9.png",
+      "bytes": 3133759,
+      "skipped": true
+    },
+    {
+      "id": "gold-emboss-texture",
+      "title": "烫金浮雕纹理",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/gold-emboss-texture-16x9.png",
+      "bytes": 4057667,
+      "skipped": true
+    },
+    {
+      "id": "ceramic-relief",
+      "title": "高端陶瓷浮雕",
+      "aspect": "16:9",
+      "path": "public/assets/style-showcase/2026-04-15/ceramic-relief-16x9.png",
+      "bytes": 2760495,
+      "sha256": "b19d538d51e14f4261f31627391a1b4cd1eab23adabc66994e9fb14881cb83ac",
+      "latencyMs": 28176,
+      "model": "gemini-3.1-flash-image-preview",
+      "size": "2K"
+    }
+  ],
+  "errors": [],
+  "completedAt": "2026-04-15T14:45:35.511Z"
+}
