@@ -30,6 +30,8 @@ Start the local UI server and open the URL it prints:
 npm run ui
 ```
 
+HTTP API usage is documented in [API.md](API.md).
+
 Options:
 - `--out <file>` output path (default `output.png`)
 - `--count <n>` number of images

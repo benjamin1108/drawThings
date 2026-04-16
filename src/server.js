@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { generateImages, generateText } from "./gemini-client.js";
+import { buildStyledPrompt, findStyle, listStyles, styleForApi } from "./styles.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,26 +26,56 @@ const server = createServer(async (req, res) => {
       pathname = pathname.slice(0, -1);
     }
 
+    if (req.method === "GET" && pathname === "/api/styles") {
+      sendJson(res, 200, { styles: listStyles() });
+      return;
+    }
+
+    if (req.method === "GET" && pathname.startsWith("/api/styles/")) {
+      const styleId = decodeURIComponent(pathname.replace("/api/styles/", ""));
+      const style = findStyle(styleId);
+      if (!style) {
+        sendJson(res, 404, { error: "Style not found." });
+        return;
+      }
+      sendJson(res, 200, styleForApi(style));
+      return;
+    }
+
     if (req.method === "POST" && pathname === "/api/tasks") {
       const body = await readJsonBody(req, res);
       if (!body) {
         return;
       }
 
+      const styleId = String(body.styleId || "").trim();
+      const style = styleId ? findStyle(styleId) : null;
+      if (styleId && !style) {
+        sendJson(res, 400, { error: "Unknown styleId." });
+        return;
+      }
+
       const prompt = String(body.prompt || "").trim();
-      if (!prompt) {
+      const userContent = body.userContent ? String(body.userContent) : "";
+      const referenceImages = normalizeReferenceImages(body.referenceImages);
+      const aspect = body.aspect ? String(body.aspect) : style?.aspect || "16:9";
+      const finalPrompt = resolveFinalPrompt({
+        body,
+        prompt,
+        userContent,
+        style,
+        aspect,
+        referenceImages,
+      });
+      if (!finalPrompt) {
         sendJson(res, 400, { error: "Prompt is required." });
         return;
       }
 
       const count = clampNumber(body.count, 1, 2, 2);
-      const aspect = body.aspect ? String(body.aspect) : "16:9";
-      const negative = body.negative ? String(body.negative) : undefined;
+      const negative = body.negative ? String(body.negative) : style?.negative || undefined;
       const size = body.size ? String(body.size) : undefined;
-      const templatePrompt = body.templatePrompt ? String(body.templatePrompt) : "";
-      const userContent = body.userContent ? String(body.userContent) : "";
-      const finalPrompt = body.finalPrompt ? String(body.finalPrompt) : prompt;
-      const referenceImages = normalizeReferenceImages(body.referenceImages);
+      const templatePrompt = body.templatePrompt ? String(body.templatePrompt) : style?.prompt || "";
       const desiredCount = referenceImages.length > 0 ? 1 : count;
       const model = resolveImageModel(body.modelMode, body.model);
 
@@ -59,6 +90,8 @@ const server = createServer(async (req, res) => {
         userContent,
         finalPrompt,
         referenceImages,
+        styleId: style?.id,
+        styleTitle: style?.title,
       });
 
       sendJson(res, 202, { taskId });
@@ -75,12 +108,18 @@ const server = createServer(async (req, res) => {
         sendJson(res, 400, { error: "User content is required." });
         return;
       }
-      const aspect = body.aspect ? String(body.aspect) : "16:9";
+      const styleId = String(body.styleId || "").trim();
+      const style = styleId ? findStyle(styleId) : null;
+      if (styleId && !style) {
+        sendJson(res, 400, { error: "Unknown styleId." });
+        return;
+      }
+      const aspect = body.aspect ? String(body.aspect) : style?.aspect || "16:9";
       const size = body.size ? String(body.size) : undefined;
-      const negative = body.negative ? String(body.negative) : undefined;
-      const templatePrompt = body.templatePrompt ? String(body.templatePrompt) : "";
-      const stylePrompt = body.stylePrompt ? String(body.stylePrompt) : "";
-      const styleTitle = body.styleTitle ? String(body.styleTitle) : "";
+      const negative = body.negative ? String(body.negative) : style?.negative || undefined;
+      const templatePrompt = body.templatePrompt ? String(body.templatePrompt) : style?.prompt || "";
+      const stylePrompt = body.stylePrompt ? String(body.stylePrompt) : style?.prompt || "";
+      const styleTitle = body.styleTitle ? String(body.styleTitle) : style?.title || "";
       const model = resolveImageModel(body.modelMode, body.model);
       const taskId = createPptTask({
         userContent,
@@ -90,9 +129,18 @@ const server = createServer(async (req, res) => {
         templatePrompt,
         stylePrompt,
         styleTitle,
+        styleId: style?.id,
         model,
       });
       sendJson(res, 202, { taskId });
+      return;
+    }
+
+    const taskImageMatch = pathname.match(/^\/api\/tasks\/([^/]+)\/images\/(\d+)$/);
+    if (req.method === "GET" && taskImageMatch) {
+      const taskId = decodeURIComponent(taskImageMatch[1]);
+      const imageIndex = Number(taskImageMatch[2]);
+      await sendTaskImage(res, taskId, imageIndex);
       return;
     }
 
@@ -266,6 +314,63 @@ function sendJson(res, statusCode, payload) {
   res.end(JSON.stringify(payload));
 }
 
+async function sendTaskImage(res, taskId, imageIndex) {
+  if (!Number.isInteger(imageIndex) || imageIndex < 1) {
+    sendJson(res, 400, { error: "Image index must be a positive integer." });
+    return;
+  }
+
+  const task = tasks.get(taskId);
+  if (!task) {
+    sendJson(res, 404, { error: "Task not found." });
+    return;
+  }
+  if (task.status !== "completed") {
+    sendJson(res, 409, { error: "Task is not completed." });
+    return;
+  }
+
+  const zeroBasedIndex = imageIndex - 1;
+  const savedPath = Array.isArray(task.savedImages) ? task.savedImages[zeroBasedIndex] : "";
+  if (savedPath) {
+    const filePath = safeDataPath(savedPath);
+    if (filePath) {
+      try {
+        const stat = await fs.promises.stat(filePath);
+        sendPngHeaders(res, taskId, imageIndex, stat.size);
+        fs.createReadStream(filePath).pipe(res);
+        return;
+      } catch {
+        // Fall back to the in-memory base64 payload below if available.
+      }
+    }
+  }
+
+  const base64 = Array.isArray(task.images) ? task.images[zeroBasedIndex] : "";
+  if (!base64) {
+    sendJson(res, 404, { error: "Image not found." });
+    return;
+  }
+  const buffer = Buffer.from(base64, "base64");
+  sendPngHeaders(res, taskId, imageIndex, buffer.byteLength);
+  res.end(buffer);
+}
+
+function sendPngHeaders(res, taskId, imageIndex, contentLength) {
+  const filename = `generated-${taskId}-${imageIndex}.png`;
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "image/png");
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  res.setHeader("Cache-Control", "no-store");
+  if (Number.isFinite(contentLength)) {
+    res.setHeader("Content-Length", String(contentLength));
+  }
+}
+
+function buildTaskImageUrl(taskId, imageIndex) {
+  return `/api/tasks/${encodeURIComponent(taskId)}/images/${imageIndex}`;
+}
+
 async function readJsonBody(req, res) {
   const chunks = [];
   for await (const chunk of req) {
@@ -290,6 +395,22 @@ function clampNumber(value, min, max, fallback) {
     return fallback;
   }
   return Math.min(Math.max(num, min), max);
+}
+
+function resolveFinalPrompt({ body, prompt, userContent, style, aspect, referenceImages }) {
+  const explicitFinalPrompt = body.finalPrompt ? String(body.finalPrompt).trim() : "";
+  if (explicitFinalPrompt) {
+    return explicitFinalPrompt;
+  }
+  if (style) {
+    return buildStyledPrompt({
+      style,
+      userContent: userContent || prompt,
+      aspect,
+      referenceImages,
+    });
+  }
+  return prompt;
 }
 
 function resolveImageModel(modelMode, explicitModel) {
@@ -359,6 +480,7 @@ function createTask(payload) {
       task.latencyMs = latencyMs;
       task.savedImages = savedImages.map((item) => item.path);
       task.savedReferences = savedReferences.map((item) => item.path);
+      task.downloadUrls = savedImages.map((_, index) => buildTaskImageUrl(taskId, index + 1));
       await writeAuditEntry({
         id: auditId,
         taskId,
@@ -373,6 +495,8 @@ function createTask(payload) {
         promptUser: payload.userContent || "",
         promptFinal: payload.finalPrompt || payload.prompt,
         negative: payload.negative || "",
+        styleId: payload.styleId || "",
+        styleTitle: payload.styleTitle || "",
         images: savedImages,
         references: savedReferences,
       });
@@ -406,6 +530,8 @@ function createTask(payload) {
         promptUser: payload.userContent || "",
         promptFinal: payload.finalPrompt || payload.prompt,
         negative: payload.negative || "",
+        styleId: payload.styleId || "",
+        styleTitle: payload.styleTitle || "",
         error: task.error,
         images: [],
         references: savedReferences,
@@ -472,6 +598,7 @@ function createPptTask(payload) {
       task.completedAt = completedAt;
       task.latencyMs = latencyMs;
       task.savedImages = savedImages.map((item) => item.path);
+      task.downloadUrls = savedImages.map((_, index) => buildTaskImageUrl(taskId, index + 1));
       await writeAuditEntry({
         id: auditId,
         taskId,
@@ -490,6 +617,7 @@ function createPptTask(payload) {
         negative: payload.negative || "",
         stylePrompt: payload.stylePrompt || "",
         styleTitle: payload.styleTitle || "",
+        styleId: payload.styleId || "",
         outline,
         images: savedImages,
         references: [],
@@ -521,6 +649,7 @@ function createPptTask(payload) {
         negative: payload.negative || "",
         stylePrompt: payload.stylePrompt || "",
         styleTitle: payload.styleTitle || "",
+        styleId: payload.styleId || "",
         outline: null,
         error: task.error,
         images: [],
