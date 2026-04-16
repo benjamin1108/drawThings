@@ -22,8 +22,8 @@ ${styleRules}
 const templates = [
   {
     id: "character",
-    title: "万物绘色",
-    description: "通用风格规则，万物皆可手绘。",
+    title: "通用手绘风格",
+    description: "松弛线稿、明快色块和手绘图标，适合通用主题的信息表达。",
     tags: ["人物", "松弛线稿"],
     aspect: "16:9",
     prompt: `# 风格规则
@@ -256,6 +256,21 @@ const templates = [
   },
 ];
 
+const visibleTemplateOrder = [
+  "character",
+  "corporate-flat",
+  "clay-cute-3d",
+  "chalkboard-sketch",
+  "paper-cut-relief",
+  "eco-watercolor",
+  "abstract-fluid-art",
+  "vintage-pen-manuscript",
+];
+
+const visibleTemplates = visibleTemplateOrder
+  .map((id) => templates.find((template) => template.id === id))
+  .filter(Boolean);
+
 const elements = {
   templateGrid: document.getElementById("template-grid"),
   userContent: document.getElementById("user-content"),
@@ -289,7 +304,7 @@ const elements = {
   form: document.getElementById("prompt-form"),
 };
 
-let activeTemplate = templates[0];
+let activeTemplate = visibleTemplates[0];
 let editorVisible = false;
 let loadingCards = [];
 let referenceImages = [];
@@ -304,10 +319,11 @@ const dbState = {
 };
 const HISTORY_LIMIT = 12;
 const showcaseBasePath = "/assets/style-showcase/2026-04-15";
+const showcaseCompressedBasePath = `${showcaseBasePath}/compressed`;
 
 function renderTemplates() {
   elements.templateGrid.innerHTML = "";
-  templates.forEach((template, index) => {
+  visibleTemplates.forEach((template, index) => {
     const card = document.createElement("div");
     card.className = "template-card fade-in";
     card.style.animationDelay = `${index * 0.05}s`;
@@ -329,7 +345,10 @@ function renderTemplates() {
 function updateTemplateSelection() {
   const cards = elements.templateGrid.querySelectorAll(".template-card");
   cards.forEach((card, index) => {
-    card.classList.toggle("active", templates[index].id === activeTemplate.id);
+    card.classList.toggle(
+      "active",
+      visibleTemplates[index].id === activeTemplate.id
+    );
   });
 }
 
@@ -361,6 +380,10 @@ function updateActiveCard() {
 }
 
 function stylePreviewPath(template) {
+  return `${showcaseCompressedBasePath}/${template.id}-16x9.png`;
+}
+
+function styleOriginalPath(template) {
   return `${showcaseBasePath}/${template.id}-16x9.png`;
 }
 
@@ -368,8 +391,8 @@ function openImageLightbox() {
   if (!elements.imageLightbox || !elements.lightboxImage) {
     return;
   }
-  const previewPath = stylePreviewPath(activeTemplate);
-  elements.lightboxImage.src = previewPath;
+  const originalPath = styleOriginalPath(activeTemplate);
+  elements.lightboxImage.src = originalPath;
   elements.lightboxImage.alt = `${activeTemplate.title} 样图放大预览`;
   if (elements.lightboxCaption) {
     elements.lightboxCaption.textContent = activeTemplate.title;
@@ -395,16 +418,14 @@ function setStatus(message, tone) {
 
 function setModelStatus(model, size, outlineModel) {
   if (!model) {
-    elements.modelStatus.textContent = `策略：${selectedModelModeLabel()} | 模型：生成后显示`;
+    elements.modelStatus.textContent = "";
     return;
   }
   if (outlineModel) {
-    elements.modelStatus.textContent = size
-      ? `模型：${outlineModel} → ${model} | 尺寸：${size}`
-      : `模型：${outlineModel} → ${model}`;
+    elements.modelStatus.textContent = size ? `尺寸：${size}` : "";
     return;
   }
-  elements.modelStatus.textContent = size ? `模型：${model} | 尺寸：${size}` : `模型：${model}`;
+  elements.modelStatus.textContent = size ? `尺寸：${size}` : "";
 }
 
 function selectedModelMode() {
@@ -451,6 +472,9 @@ function requestedCount() {
 }
 
 function updateReferenceUI() {
+  if (!elements.referenceGrid || !elements.referenceTip) {
+    return;
+  }
   elements.referenceGrid.innerHTML = "";
   referenceImages.forEach((item, index) => {
     const card = document.createElement("div");
@@ -464,8 +488,7 @@ function updateReferenceUI() {
     });
     elements.referenceGrid.appendChild(card);
   });
-  elements.referenceTip.textContent =
-    referenceImages.length > 0 ? "已添加参考图：将生成 1 张结果。" : "";
+  elements.referenceTip.textContent = "";
 }
 
 function removeReference(index) {
@@ -552,7 +575,7 @@ async function handleGenerate(event) {
     return;
   }
 
-  setStatus(`正在生成中，${selectedModelModeLabel()}...`, "");
+  setStatus("正在生成中...", "");
   elements.gallerySection.classList.remove("hidden");
   elements.imageGrid.innerHTML = "";
   showLoadingPlaceholder(count);
@@ -602,9 +625,7 @@ function resetPrompt() {
 function toggleEditor() {
   editorVisible = !editorVisible;
   elements.templateEditor.classList.toggle("hidden", !editorVisible);
-  elements.toggleEditor.textContent = editorVisible
-    ? "收起模版提示词"
-    : "编辑模版提示词";
+  elements.toggleEditor.textContent = "";
 }
 
 function scrollToForm() {
@@ -891,7 +912,6 @@ openHistoryDb().then(() => {
 elements.modelModes.forEach((input) => {
   input.addEventListener("change", () => {
     setModelStatus(null);
-    setStatus(`已切换为${selectedModelModeLabel()}。`, "");
   });
 });
 
@@ -899,13 +919,19 @@ elements.form.addEventListener("submit", handleGenerate);
 if (elements.reset) {
   elements.reset.addEventListener("click", resetPrompt);
 }
-elements.scrollToForm.addEventListener("click", scrollToForm);
+if (elements.scrollToForm) {
+  elements.scrollToForm.addEventListener("click", scrollToForm);
+}
 if (elements.toggleEditor) {
   elements.toggleEditor.addEventListener("click", toggleEditor);
 }
 elements.clearHistory.addEventListener("click", clearHistory);
-elements.referenceAdd.addEventListener("click", () => elements.referenceInput.click());
-elements.referenceInput.addEventListener("change", handleReferenceInput);
+if (elements.referenceAdd && elements.referenceInput) {
+  elements.referenceAdd.addEventListener("click", () => elements.referenceInput.click());
+}
+if (elements.referenceInput) {
+  elements.referenceInput.addEventListener("change", handleReferenceInput);
+}
 if (elements.activePanelImage) {
   elements.activePanelImage.addEventListener("click", openImageLightbox);
   elements.activePanelImage.addEventListener("keydown", (event) => {
