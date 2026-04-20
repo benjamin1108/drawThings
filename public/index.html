@@ -3,162 +3,250 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DrawThings UI</title>
+    <title>DrawThings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@500;700;800&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div class="page">
-      <header class="topbar reveal delay-1">
-        <div class="brand">
-          <span class="brand-mark"></span>
-          <div>
-            <p class="eyebrow">Visual Style Lab</p>
-            <h1>DrawThings</h1>
+    <a class="skip-link" href="#chatbox">跳到生成面板</a>
+
+    <div class="atmosphere" aria-hidden="true">
+      <span class="atmosphere__orb atmosphere__orb--violet"></span>
+      <span class="atmosphere__orb atmosphere__orb--emerald"></span>
+      <span class="atmosphere__orb atmosphere__orb--amber"></span>
+      <span class="atmosphere__grain"></span>
+    </div>
+
+    <div class="app">
+      <header class="topbar">
+        <div class="topbar__bezel">
+          <div class="topbar__core">
+            <div class="brand">
+              <span class="brand-mark" aria-hidden="true"></span>
+              <div class="brand__text">
+                <span class="brand__wordmark">DrawThings</span>
+                <span class="brand__tag">Studio · 01</span>
+              </div>
+            </div>
+            <nav class="topbar-actions" aria-label="辅助操作">
+              <button
+                class="chip-button"
+                type="button"
+                id="history-toggle"
+                aria-expanded="true"
+                aria-controls="history-sidebar"
+              >
+                <span class="chip-button__dot" aria-hidden="true"></span>
+                <span>历史</span>
+              </button>
+              <a class="chip-button chip-button--ghost" href="/audit.html">
+                <span>管理</span>
+                <span class="chip-button__arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+                </span>
+              </a>
+            </nav>
           </div>
-        </div>
-        <div class="topbar-actions">
-          <a class="button ghost small" href="/audit.html">管理</a>
         </div>
       </header>
 
-      <main class="content" id="form-area">
-        <section class="workspace reveal delay-2">
-          <aside class="templates">
-            <div class="section-title">
-              <div>
-                <h2>风格库</h2>
-                <p>选择一种信息图视觉语言。</p>
+      <main class="workspace">
+        <section class="stage" aria-label="风格选择与生成画布">
+          <div class="stage-mode stage-mode--flow" id="stage-flow">
+            <div class="coverflow">
+              <div class="coverflow__bezel">
+                <div class="coverflow__core">
+                  <div class="swiper coverflow__swiper" id="coverflow">
+                    <div class="swiper-wrapper" id="coverflow-track" role="listbox" aria-label="风格列表"></div>
+                  </div>
+                  <div class="coverflow__reflection" aria-hidden="true"></div>
+                  <button
+                    class="coverflow__nav coverflow__nav--prev"
+                    type="button"
+                    id="flow-prev"
+                    aria-label="上一个风格"
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12l6-6"/></svg>
+                  </button>
+                  <button
+                    class="coverflow__nav coverflow__nav--next"
+                    type="button"
+                    id="flow-next"
+                    aria-label="下一个风格"
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
-            <div class="template-grid" id="template-grid"></div>
-          </aside>
-
-          <div class="active-panel">
-            <div>
-              <p class="eyebrow">Active Template</p>
-              <h2 id="active-title">通用手绘风格</h2>
-              <p id="active-desc">
-                松弛线稿、明快色块和手绘图标，适合通用主题的信息表达。
-              </p>
-              <div class="hero-tags" id="active-tags"></div>
+            <div class="stage-meta">
+              <span class="eyebrow">当前风格</span>
+              <h2 class="stage-meta__title" id="flow-title">加载中…</h2>
+              <div class="stage-meta__tags" id="flow-tags"></div>
             </div>
-            <img
-              class="active-panel__image"
-              id="active-panel-image"
-              src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=900&q=80"
-              alt="抽象色彩参考"
-              role="button"
-              tabindex="0"
-            />
           </div>
 
-          <section class="composer reveal delay-3">
-            <div class="section-title composer-title">
-              <div>
-                <h2>生成面板</h2>
-              </div>
-              <div class="composer-controls">
-                <button class="button primary" type="submit" form="prompt-form" id="generate">
-                  生成图像
+          <div class="stage-mode stage-mode--canvas hidden" id="stage-canvas" aria-hidden="true">
+            <div class="canvas-toolbar">
+              <button class="chip-button chip-button--ghost" type="button" id="canvas-back">
+                <span class="chip-button__arrow chip-button__arrow--back" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12l6-6"/></svg>
+                </span>
+                <span>选风格</span>
+              </button>
+              <span class="canvas-style" id="canvas-style"></span>
+              <div class="canvas-actions">
+                <button
+                  class="chip-button chip-button--ghost"
+                  type="button"
+                  id="canvas-zoom"
+                  aria-label="放大预览"
+                  hidden
+                >
+                  <span>放大</span>
                 </button>
-                <div class="model-switch">
-                  <span class="model-switch__label">策略</span>
-                  <div class="model-toggle" role="radiogroup" aria-label="生成策略">
-                    <input
-                      id="model-speed"
-                      type="radio"
-                      name="model-mode"
-                      value="speed"
-                      checked
-                    />
-                    <label for="model-speed">快</label>
-                    <input
-                      id="model-quality"
-                      type="radio"
-                      name="model-mode"
-                      value="quality"
-                    />
-                    <label for="model-quality">质</label>
-                    <span class="model-toggle__thumb" aria-hidden="true"></span>
+                <button
+                  class="chip-button chip-button--ghost"
+                  type="button"
+                  id="canvas-download"
+                  aria-label="下载图片"
+                  hidden
+                >
+                  <span>下载</span>
+                </button>
+              </div>
+            </div>
+            <div class="canvas">
+              <div class="canvas__bezel">
+                <div class="canvas__core" id="canvas">
+                  <div class="canvas__skeleton" id="canvas-skeleton">
+                    <span class="canvas__skeleton-label">生成中</span>
+                    <span class="canvas__skeleton-dots" aria-hidden="true">
+                      <span></span><span></span><span></span>
+                    </span>
+                  </div>
+                  <img
+                    class="canvas__image hidden"
+                    id="canvas-image"
+                    alt="生成结果"
+                  />
+                  <div class="canvas__error hidden" id="canvas-error">
+                    <p id="canvas-error-text"></p>
+                    <button class="chip-button chip-button--ghost" type="button" id="canvas-retry">
+                      <span>重试</span>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        </section>
 
-            <form id="prompt-form" class="prompt-form">
-              <textarea id="prompt" hidden></textarea>
-              <input id="negative" type="hidden" />
-              <input id="reference-input" type="file" accept="image/*" hidden />
-              <div id="reference-grid" hidden></div>
-              <div id="reference-tip" hidden></div>
-              <label class="field">
-                <span>用户内容</span>
+        <section class="chatbox-wrapper" id="chatbox-wrapper">
+          <form class="chatbox" id="prompt-form" autocomplete="off">
+            <div class="chatbox__bezel">
+              <div class="chatbox__core">
+                <label class="visually-hidden" for="user-content">用户内容</label>
                 <textarea
+                  class="chatbox__input"
                   id="user-content"
-                  rows="6"
-                  placeholder="写下要转成信息图的文字，例如：一页介绍“设计团队协作流程”的要点"
+                  rows="3"
+                  placeholder="写下要转成信息图的文字… （⌘/Ctrl + Enter 发送）"
                   required
                 ></textarea>
-              </label>
-              <div class="row two">
-                <label class="field">
-                  <span>画面比例</span>
-                  <select id="aspect">
-                    <option value="9:16">9:16</option>
-                    <option value="16:9">16:9</option>
-                    <option value="4:3">4:3</option>
-                    <option value="1:1">1:1</option>
-                  </select>
-                </label>
-                <label class="field">
-                  <span>高清尺寸</span>
-                  <select id="size">
-                    <option value="2K">2K</option>
-                    <option value="4K">4K</option>
-                  </select>
-                </label>
+                <div class="chatbox__toolbar">
+                  <div class="chatbox__options">
+                    <label class="pill">
+                      <span class="pill__label">比例</span>
+                      <select id="aspect">
+                        <option value="16:9">16:9</option>
+                        <option value="9:16">9:16</option>
+                        <option value="4:3">4:3</option>
+                        <option value="1:1">1:1</option>
+                      </select>
+                    </label>
+                    <label class="pill">
+                      <span class="pill__label">尺寸</span>
+                      <select id="size">
+                        <option value="2K">2K</option>
+                        <option value="4K">4K</option>
+                      </select>
+                    </label>
+                    <label class="pill">
+                      <span class="pill__label">策略</span>
+                      <select id="model-mode">
+                        <option value="quality">质</option>
+                        <option value="speed">快</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div class="chatbox__actions">
+                    <span class="status" id="status" aria-live="polite">准备就绪</span>
+                    <button class="primary-button" type="submit" id="generate">
+                      <span class="primary-button__label">生成</span>
+                      <span class="primary-button__trail" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div class="row actions">
-                <span class="status" id="status">准备就绪</span>
-                <span class="status muted" id="model-status"></span>
-              </div>
-            </form>
-          </section>
-        </section>
-
-        <section class="gallery reveal delay-4 hidden" id="gallery-section">
-          <div class="section-title">
-            <div>
-              <h2>生成结果</h2>
-              <p>最新生成的图片会出现在这里。</p>
             </div>
-          </div>
-          <div class="image-grid" id="image-grid"></div>
-        </section>
-
-        <section class="history reveal delay-4">
-          <div class="section-title">
-            <div class="section-title__left">
-              <h2>历史图片</h2>
-            </div>
-            <button class="button ghost small" type="button" id="clear-history">
-              清理历史
-            </button>
-          </div>
-          <div class="image-grid history-grid" id="history-grid"></div>
+          </form>
         </section>
       </main>
+
+      <aside
+        class="history-sidebar"
+        id="history-sidebar"
+        aria-label="历史生成"
+      >
+        <div class="history-sidebar__bezel">
+          <div class="history-sidebar__core">
+            <div class="history-sidebar__header">
+              <div>
+                <span class="eyebrow">档案</span>
+                <h2>近期生成</h2>
+              </div>
+              <button
+                class="chip-button chip-button--ghost chip-button--micro"
+                type="button"
+                id="history-clear"
+                aria-label="清理历史"
+                title="清理历史"
+              >
+                <span>清理</span>
+              </button>
+            </div>
+            <div class="history-sidebar__list" id="history-list">
+              <p class="history-empty" id="history-empty">暂无历史。<br/>生成后会显示在这里。</p>
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>
 
-    <div class="image-lightbox hidden" id="image-lightbox" aria-hidden="true">
-      <button class="image-lightbox__backdrop" type="button" aria-label="关闭预览"></button>
-      <figure class="image-lightbox__content">
-        <button class="image-lightbox__close" type="button" aria-label="关闭预览">关闭</button>
-        <img id="lightbox-image" src="" alt="风格样图放大预览" />
+    <div class="lightbox hidden" id="lightbox" aria-hidden="true">
+      <button class="lightbox__backdrop" type="button" aria-label="关闭预览"></button>
+      <figure class="lightbox__content">
+        <button class="lightbox__close" type="button" aria-label="关闭预览">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        <img id="lightbox-image" src="" alt="预览" />
         <figcaption id="lightbox-caption"></figcaption>
       </figure>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="/app.js"></script>
   </body>
 </html>
