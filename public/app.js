@@ -21,46 +21,16 @@ ${styleRules}
 
 const templates = [
   {
-    id: "character",
-    title: "通用手绘风格",
-    description: "松弛线稿、明快色块和手绘图标，适合通用主题的信息表达。",
-    tags: ["人物", "松弛线稿"],
-    aspect: "16:9",
-    prompt: `# 风格规则
-
-你是一位擅长 Notion 官方插画风格的信息可视化设计师，能将任何内容转化为松弛感线稿信息图。
-
-视觉风格规范（通用）
-- 明快的颜色为主，色彩自由选取，但整体素雅、简约
-
-线条特征
-- 线条粗细不均匀，像马克笔随手画的质感
-- 笔触松弛、略带抖动，不追求工整
-- 所有图标、人物、图表都保持手绘涂鸦感
-- 少部分地方填充黑色让整体压实
-
-人物画法（如需要）
-- 简笔画风格：女孩或中性人物，短发或简洁发型，圆润的头、点或线表示五官
-- 肢体夸张、动作松弛自然
-- 可以是完整人物或只露出局部（手、上半身）
-
-排版
-- 构图轻盈
-- 标题与要点来自用户内容，文字尽量精简
-
-禁止事项
-- 不要彩色渐变或复杂配色
-- 不要粗黑边框或生硬分隔线
-- 不要3D效果、阴影、立体感
-- 不要在图中出现Notion信息图字样
-- 不要密集文字堆砌
-- 装饰元素要克制
-
-输出
-- 直接生成符合上述风格的信息图，中文，不需要解释
-- 图片比例16:9
-- 画面内容严格依据用户内容，不要固定元素或固定文案`,
-    negative: "彩色渐变, 3D, 强阴影, 粗黑外框, 密集文字",
+    id: "ali-orange-flat",
+    title: "浅色阿里橙扁平",
+    description: "浅色背景、阿里橙主色调和清爽几何图标，适合通用业务与产品说明。",
+    tags: ["扁平", "阿里橙"],
+    aspect: "9:16",
+    prompt: makeInfographicPrompt(
+      "浅色阿里橙扁平",
+      "- 现代企业扁平化矢量插画信息图\n- 浅色干净背景（白色或浅灰），整体色调明亮清爽\n- 主色调为阿里橙（#FF6A00），搭配浅橙、暖灰和白色辅助色\n- 使用清晰几何图形图标，线条简洁、色块扁平\n- 柔和微弱投影，信息整合进中心图表区域\n- 采用流程图、环形图、箭头和模块卡片呈现内容\n- 8K分辨率，大师级杰作",
+    ),
+    negative: "深色背景, 过度卡通, 文字过小, 花哨纹理, 霓虹色",
   },
   {
     id: "cyber-neon-flow",
@@ -257,7 +227,7 @@ const templates = [
 ];
 
 const visibleTemplateOrder = [
-  "character",
+  "ali-orange-flat",
   "corporate-flat",
   "clay-cute-3d",
   "chalkboard-sketch",
@@ -356,7 +326,6 @@ function setActiveTemplate(template) {
   activeTemplate = template;
   elements.prompt.value = template.prompt;
   elements.negative.value = template.negative || "";
-  elements.aspect.value = template.aspect || "16:9";
   updateActiveCard();
   updateTemplateSelection();
 }
