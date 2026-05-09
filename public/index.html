@@ -10,10 +10,6 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@500;700;800&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
-    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -27,7 +23,7 @@
     </div>
 
     <div class="app">
-      <header class="topbar">
+      <header class="topbar reveal reveal--1">
         <div class="topbar__bezel">
           <div class="topbar__core">
             <div class="brand">
@@ -60,38 +56,44 @@
       </header>
 
       <main class="workspace">
-        <section class="stage" aria-label="风格选择与生成画布">
+        <section class="stage reveal reveal--2" aria-label="风格选择与生成画布">
           <div class="stage-mode stage-mode--flow" id="stage-flow">
             <div class="coverflow">
               <div class="coverflow__bezel">
                 <div class="coverflow__core">
-                  <div class="swiper coverflow__swiper" id="coverflow">
-                    <div class="swiper-wrapper" id="coverflow-track" role="listbox" aria-label="风格列表"></div>
+                  <div class="coverflow__meta">
+                    <div class="coverflow__meta-head">
+                      <span class="eyebrow eyebrow--accent">当前风格</span>
+                      <span class="coverflow__meta-index" id="flow-index" aria-hidden="true"></span>
+                    </div>
+                    <h2 class="coverflow__meta-title" id="flow-title">
+                      <span class="coverflow__meta-title-inner" id="flow-title-inner">加载中…</span>
+                    </h2>
+                    <div class="coverflow__meta-tags" id="flow-tags"></div>
                   </div>
-                  <div class="coverflow__reflection" aria-hidden="true"></div>
-                  <button
-                    class="coverflow__nav coverflow__nav--prev"
-                    type="button"
-                    id="flow-prev"
-                    aria-label="上一个风格"
-                  >
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12l6-6"/></svg>
-                  </button>
-                  <button
-                    class="coverflow__nav coverflow__nav--next"
-                    type="button"
-                    id="flow-next"
-                    aria-label="下一个风格"
-                  >
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-                  </button>
+                  <div class="coverflow__stage-area">
+                    <div class="fancards" id="fancards">
+                      <div class="fancards__canvas" id="coverflow-track" role="listbox" aria-label="风格列表"></div>
+                    </div>
+                    <button
+                      class="coverflow__nav coverflow__nav--prev"
+                      type="button"
+                      id="flow-prev"
+                      aria-label="上一个风格"
+                    >
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12l6-6"/></svg>
+                    </button>
+                    <button
+                      class="coverflow__nav coverflow__nav--next"
+                      type="button"
+                      id="flow-next"
+                      aria-label="下一个风格"
+                    >
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="stage-meta">
-              <span class="eyebrow">当前风格</span>
-              <h2 class="stage-meta__title" id="flow-title">加载中…</h2>
-              <div class="stage-meta__tags" id="flow-tags"></div>
             </div>
           </div>
 
@@ -151,16 +153,22 @@
           </div>
         </section>
 
-        <section class="chatbox-wrapper" id="chatbox-wrapper">
+        <section class="chatbox-wrapper reveal reveal--3" id="chatbox-wrapper">
           <form class="chatbox" id="prompt-form" autocomplete="off">
             <div class="chatbox__bezel">
               <div class="chatbox__core">
+                <div class="chatbox__hints" id="prompt-hints" aria-label="示例提示词">
+                  <span class="chatbox__hints-label">示例</span>
+                  <button class="hint-chip" type="button" data-hint="把 2024 中国新能源汽车市场份额做成一张可视化对比信息图，突出比亚迪、特斯拉、理想三家的年度增长曲线。">新能源对比</button>
+                  <button class="hint-chip" type="button" data-hint="用 4 个步骤解释 RAG（检索增强生成）的工作流程，每一步给一个图标和一句话说明。">流程图</button>
+                  <button class="hint-chip" type="button" data-hint="一张团队周报信息图：本周完成 3 件事、进行中 2 件、下周计划 4 件，风格简洁专业。">周报总结</button>
+                </div>
                 <label class="visually-hidden" for="user-content">用户内容</label>
                 <textarea
                   class="chatbox__input"
                   id="user-content"
                   rows="3"
-                  placeholder="写下要转成信息图的文字… （⌘/Ctrl + Enter 发送）"
+                  placeholder="把你的想法写进来 —— 一段话、一组数据、一个流程都行。⌘/Ctrl + Enter 发送"
                   required
                 ></textarea>
                 <div class="chatbox__toolbar">
@@ -188,9 +196,24 @@
                         <option value="speed">快</option>
                       </select>
                     </label>
+                    <label class="pill generation-count-pill hidden" id="generation-count-pill">
+                      <span class="pill__label">数量</span>
+                      <select id="generation-count" aria-label="生成数量">
+                        <option value="1">1 张</option>
+                        <option value="2">2 张</option>
+                        <option value="3">3 张</option>
+                        <option value="4">4 张</option>
+                        <option value="5">5 张</option>
+                        <option value="6">6 张</option>
+                        <option value="7">7 张</option>
+                        <option value="8">8 张</option>
+                        <option value="9">9 张</option>
+                        <option value="10">10 张</option>
+                      </select>
+                    </label>
                   </div>
                   <div class="chatbox__actions">
-                    <span class="status" id="status" aria-live="polite">准备就绪</span>
+                    <span class="status" id="status" aria-live="polite">等你把想法丢进来</span>
                     <button class="primary-button" type="submit" id="generate">
                       <span class="primary-button__label">生成</span>
                       <span class="primary-button__trail" aria-hidden="true">
@@ -206,7 +229,7 @@
       </main>
 
       <aside
-        class="history-sidebar"
+        class="history-sidebar reveal reveal--4"
         id="history-sidebar"
         aria-label="历史生成"
       >
@@ -214,7 +237,7 @@
           <div class="history-sidebar__core">
             <div class="history-sidebar__header">
               <div>
-                <span class="eyebrow">档案</span>
+                <span class="eyebrow eyebrow--muted">档案</span>
                 <h2>近期生成</h2>
               </div>
               <button
@@ -228,7 +251,18 @@
               </button>
             </div>
             <div class="history-sidebar__list" id="history-list">
-              <p class="history-empty" id="history-empty">暂无历史。<br/>生成后会显示在这里。</p>
+              <div class="history-empty" id="history-empty">
+                <div class="history-empty__skeleton" aria-hidden="true">
+                  <span class="history-empty__tile"></span>
+                  <span class="history-empty__tile"></span>
+                  <span class="history-empty__tile"></span>
+                  <span class="history-empty__tile"></span>
+                </div>
+                <div class="history-empty__copy">
+                  <span class="history-empty__dot" aria-hidden="true"></span>
+                  <p>生成的作品会按时间倒序<br/>在这里积累。</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -246,7 +280,6 @@
       </figure>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="/app.js"></script>
   </body>
 </html>

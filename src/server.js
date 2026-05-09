@@ -151,7 +151,7 @@ const server = createServer(async (req, res) => {
         sendJson(res, 404, { error: "Task not found." });
         return;
       }
-      sendJson(res, 200, task);
+      sendJson(res, 200, serializeTask(task));
       return;
     }
 
@@ -341,19 +341,12 @@ async function sendTaskImage(res, taskId, imageIndex) {
         fs.createReadStream(filePath).pipe(res);
         return;
       } catch {
-        // Fall back to the in-memory base64 payload below if available.
+        sendJson(res, 404, { error: "Image not found." });
+        return;
       }
     }
   }
-
-  const base64 = Array.isArray(task.images) ? task.images[zeroBasedIndex] : "";
-  if (!base64) {
-    sendJson(res, 404, { error: "Image not found." });
-    return;
-  }
-  const buffer = Buffer.from(base64, "base64");
-  sendPngHeaders(res, taskId, imageIndex, buffer.byteLength);
-  res.end(buffer);
+  sendJson(res, 404, { error: "Image not found." });
 }
 
 function sendPngHeaders(res, taskId, imageIndex, contentLength) {
@@ -369,6 +362,27 @@ function sendPngHeaders(res, taskId, imageIndex, contentLength) {
 
 function buildTaskImageUrl(taskId, imageIndex) {
   return `/api/tasks/${encodeURIComponent(taskId)}/images/${imageIndex}`;
+}
+
+function serializeTask(task) {
+  return {
+    id: task.id,
+    type: task.type,
+    status: task.status,
+    createdAt: task.createdAt,
+    model: task.model,
+    size: task.size,
+    totalSlides: task.totalSlides,
+    completedSlides: task.completedSlides,
+    outlineModel: task.outlineModel,
+    auditId: task.auditId,
+    completedAt: task.completedAt,
+    latencyMs: task.latencyMs,
+    savedImages: task.savedImages,
+    savedReferences: task.savedReferences,
+    downloadUrls: task.downloadUrls,
+    error: task.error,
+  };
 }
 
 async function readJsonBody(req, res) {
@@ -462,8 +476,6 @@ function createTask(payload) {
 
   generateImages(payload)
     .then(async (result) => {
-      task.status = "completed";
-      task.images = result.images;
       task.model = result.model;
       task.size = result.size;
       const completedAt = new Date().toISOString();
@@ -481,6 +493,7 @@ function createTask(payload) {
       task.savedImages = savedImages.map((item) => item.path);
       task.savedReferences = savedReferences.map((item) => item.path);
       task.downloadUrls = savedImages.map((_, index) => buildTaskImageUrl(taskId, index + 1));
+      task.status = "completed";
       await writeAuditEntry({
         id: auditId,
         taskId,
@@ -588,8 +601,6 @@ function createPptTask(payload) {
         task.size = result.size;
       }
 
-      task.status = "completed";
-      task.images = images;
       const completedAt = new Date().toISOString();
       const latencyMs = Date.now() - startedAt;
       const savedImages = await persistImagesToDisk(images, taskId, completedAt);
@@ -599,6 +610,7 @@ function createPptTask(payload) {
       task.latencyMs = latencyMs;
       task.savedImages = savedImages.map((item) => item.path);
       task.downloadUrls = savedImages.map((_, index) => buildTaskImageUrl(taskId, index + 1));
+      task.status = "completed";
       await writeAuditEntry({
         id: auditId,
         taskId,

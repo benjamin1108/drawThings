@@ -303,7 +303,6 @@ PPT 任务：
   "createdAt": "2026-04-16T08:00:00.000Z",
   "model": "gemini-3-pro-image-preview",
   "size": "1K",
-  "images": ["base64 image data"],
   "auditId": "419365d1-b545-4382-a6e1-045d4e49cb14",
   "completedAt": "2026-04-16T08:00:12.000Z",
   "latencyMs": 12000,
@@ -313,13 +312,7 @@ PPT 任务：
 }
 ```
 
-`images` 是 base64 编码的 PNG 图片数据，不包含 Data URL 前缀。浏览器中可这样使用：
-
-```js
-const src = `data:image/png;base64,${imageBase64}`;
-```
-
-如果外部项目只需要拿 PNG 文件，优先使用 `downloadUrls` 或下面的下载接口。它直接返回图片二进制内容，比从 JSON 里读取 base64 再解码更快，传输体积也更小。
+完成态不会内联返回 base64 图片数据。外部项目应优先使用 `downloadUrls` 或下面的下载接口获取 PNG 文件，这样传输体积更小，也避免大 JSON 响应。
 
 ### 失败响应
 
