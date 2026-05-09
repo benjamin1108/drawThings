@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DrawThings</title>
+    <title>DrawThings 生图工作台</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <a class="skip-link" href="#chatbox">跳到生成面板</a>
+    <a class="skip-link" href="#user-content">跳到生成面板</a>
 
     <div class="atmosphere" aria-hidden="true">
       <span class="atmosphere__orb atmosphere__orb--violet"></span>
@@ -30,7 +30,7 @@
               <span class="brand-mark" aria-hidden="true"></span>
               <div class="brand__text">
                 <span class="brand__wordmark">DrawThings</span>
-                <span class="brand__tag">Studio · 01</span>
+                <span class="brand__tag">生图工作台</span>
               </div>
             </div>
             <nav class="topbar-actions" aria-label="辅助操作">
@@ -63,15 +63,22 @@
                 <div class="coverflow__core">
                   <div class="coverflow__meta">
                     <div class="coverflow__meta-head">
-                      <span class="eyebrow eyebrow--accent">当前风格</span>
+                      <span class="eyebrow eyebrow--accent">风格预设</span>
                       <span class="coverflow__meta-index" id="flow-index" aria-hidden="true"></span>
                     </div>
                     <h2 class="coverflow__meta-title" id="flow-title">
                       <span class="coverflow__meta-title-inner" id="flow-title-inner">加载中…</span>
                     </h2>
                     <div class="coverflow__meta-tags" id="flow-tags"></div>
+                    <figure class="style-hero">
+                      <img id="style-hero-image" alt="当前风格预览" />
+                    </figure>
                   </div>
                   <div class="coverflow__stage-area">
+                    <div class="style-browser-head">
+                      <span>选择风格</span>
+                      <span>滚动浏览</span>
+                    </div>
                     <div class="fancards" id="fancards">
                       <div class="fancards__canvas" id="coverflow-track" role="listbox" aria-label="风格列表"></div>
                     </div>
@@ -103,7 +110,7 @@
                 <span class="chip-button__arrow chip-button__arrow--back" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12l6-6"/></svg>
                 </span>
-                <span>选风格</span>
+                <span>返回编辑</span>
               </button>
               <span class="canvas-style" id="canvas-style"></span>
               <div class="canvas-actions">
@@ -157,65 +164,30 @@
           <form class="chatbox" id="prompt-form" autocomplete="off">
             <div class="chatbox__bezel">
               <div class="chatbox__core">
+                <div class="composer-head">
+                  <span class="eyebrow eyebrow--accent">文字生图</span>
+                  <h1>生成一张图片</h1>
+                  <p>写下画面主体、风格、氛围和用途。默认设置已经足够开始，细节参数可以按需展开。</p>
+                </div>
                 <div class="chatbox__hints" id="prompt-hints" aria-label="示例提示词">
-                  <span class="chatbox__hints-label">示例</span>
-                  <button class="hint-chip" type="button" data-hint="把 2024 中国新能源汽车市场份额做成一张可视化对比信息图，突出比亚迪、特斯拉、理想三家的年度增长曲线。">新能源对比</button>
-                  <button class="hint-chip" type="button" data-hint="用 4 个步骤解释 RAG（检索增强生成）的工作流程，每一步给一个图标和一句话说明。">流程图</button>
-                  <button class="hint-chip" type="button" data-hint="一张团队周报信息图：本周完成 3 件事、进行中 2 件、下周计划 4 件，风格简洁专业。">周报总结</button>
+                  <span class="chatbox__hints-label">灵感</span>
+                  <button class="hint-chip" type="button" data-hint="一张高端护肤品商业海报，白色乳霜瓶居中，浅灰背景，柔和自然光，画面简洁，有大面积留白。">商业海报</button>
+                  <button class="hint-chip" type="button" data-hint="一张信息图，解释 AI 图片生成的 4 个步骤，使用干净的网格排版、细线图标和低饱和蓝绿色点缀。">信息图</button>
+                  <button class="hint-chip" type="button" data-hint="一张 16:9 产品发布视觉，黑色智能手表漂浮在浅色背景上，金属质感，精致阴影，科技但克制。">产品视觉</button>
                 </div>
                 <label class="visually-hidden" for="user-content">用户内容</label>
                 <textarea
                   class="chatbox__input"
                   id="user-content"
                   rows="3"
-                  placeholder="把你的想法写进来 —— 一段话、一组数据、一个流程都行。⌘/Ctrl + Enter 发送"
+                  placeholder="描述你想生成的画面、主体、风格和氛围。Ctrl / Command + Enter 生成"
                   required
                 ></textarea>
                 <div class="chatbox__toolbar">
-                  <div class="chatbox__options">
-                    <label class="pill">
-                      <span class="pill__label">比例</span>
-                      <select id="aspect">
-                        <option value="16:9">16:9</option>
-                        <option value="9:16">9:16</option>
-                        <option value="4:3">4:3</option>
-                        <option value="1:1">1:1</option>
-                      </select>
-                    </label>
-                    <label class="pill">
-                      <span class="pill__label">尺寸</span>
-                      <select id="size">
-                        <option value="2K">2K</option>
-                        <option value="4K">4K</option>
-                      </select>
-                    </label>
-                    <label class="pill">
-                      <span class="pill__label">策略</span>
-                      <select id="model-mode">
-                        <option value="quality">质</option>
-                        <option value="speed">快</option>
-                      </select>
-                    </label>
-                    <label class="pill generation-count-pill hidden" id="generation-count-pill">
-                      <span class="pill__label">数量</span>
-                      <select id="generation-count" aria-label="生成数量">
-                        <option value="1">1 张</option>
-                        <option value="2">2 张</option>
-                        <option value="3">3 张</option>
-                        <option value="4">4 张</option>
-                        <option value="5">5 张</option>
-                        <option value="6">6 张</option>
-                        <option value="7">7 张</option>
-                        <option value="8">8 张</option>
-                        <option value="9">9 张</option>
-                        <option value="10">10 张</option>
-                      </select>
-                    </label>
-                  </div>
                   <div class="chatbox__actions">
-                    <span class="status" id="status" aria-live="polite">等你把想法丢进来</span>
+                    <span class="status" id="status" aria-live="polite">准备创作</span>
                     <button class="primary-button" type="submit" id="generate">
-                      <span class="primary-button__label">生成</span>
+                      <span class="primary-button__label">开始生成</span>
                       <span class="primary-button__trail" aria-hidden="true">
                         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
                       </span>
@@ -233,6 +205,52 @@
         id="history-sidebar"
         aria-label="历史生成"
       >
+        <section class="settings-panel" aria-label="生成参数">
+          <div class="settings-panel__head">
+            <span class="eyebrow eyebrow--accent">参数</span>
+            <h2>生成设置</h2>
+          </div>
+          <div class="settings-panel__body">
+            <label class="setting-field">
+              <span class="setting-field__label">比例</span>
+              <select id="aspect">
+                <option value="16:9">16:9 横版</option>
+                <option value="9:16">9:16 竖版</option>
+                <option value="4:3">4:3 标准</option>
+                <option value="1:1">1:1 方图</option>
+              </select>
+            </label>
+            <label class="setting-field">
+              <span class="setting-field__label">质量</span>
+              <select id="size">
+                <option value="2K">标准</option>
+                <option value="4K">高清</option>
+              </select>
+            </label>
+            <label class="setting-field">
+              <span class="setting-field__label">策略</span>
+              <select id="model-mode">
+                <option value="quality">细节优先</option>
+                <option value="speed">速度优先</option>
+              </select>
+            </label>
+            <label class="setting-field generation-count-pill hidden" id="generation-count-pill">
+              <span class="setting-field__label">数量</span>
+              <select id="generation-count" aria-label="生成数量">
+                <option value="1">1 张</option>
+                <option value="2">2 张</option>
+                <option value="3">3 张</option>
+                <option value="4">4 张</option>
+                <option value="5">5 张</option>
+                <option value="6">6 张</option>
+                <option value="7">7 张</option>
+                <option value="8">8 张</option>
+                <option value="9">9 张</option>
+                <option value="10">10 张</option>
+              </select>
+            </label>
+          </div>
+        </section>
         <div class="history-sidebar__bezel">
           <div class="history-sidebar__core">
             <div class="history-sidebar__header">

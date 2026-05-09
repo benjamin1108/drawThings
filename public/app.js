@@ -22,6 +22,7 @@ const el = {
   flowTitleInner: document.getElementById("flow-title-inner"),
   flowTags: document.getElementById("flow-tags"),
   flowIndex: document.getElementById("flow-index"),
+  styleHeroImage: document.getElementById("style-hero-image"),
   promptHints: document.getElementById("prompt-hints"),
   canvasBack: document.getElementById("canvas-back"),
   canvasStyle: document.getElementById("canvas-style"),
@@ -90,6 +91,11 @@ function renderFancards() {
     img.loading = "lazy";
     img.draggable = false;
     card.appendChild(img);
+
+    const caption = document.createElement("span");
+    caption.className = "fancard__caption";
+    caption.textContent = style.title;
+    card.appendChild(caption);
 
     const zoom = document.createElement("button");
     zoom.type = "button";
@@ -268,7 +274,7 @@ function setActiveNoToggle(index) {
 }
 
 function updateActiveMeta() {
-  const metaIndex = state.hoverIndex >= 0 ? state.hoverIndex : state.activeIndex;
+  const metaIndex = state.activeIndex >= 0 ? state.activeIndex : state.hoverIndex;
   const style = state.styles[metaIndex];
   if (!style) return;
   if (el.flowTitleInner) {
@@ -285,6 +291,13 @@ function updateActiveMeta() {
     const current = String(metaIndex + 1).padStart(2, "0");
     const total = String(state.styles.length).padStart(2, "0");
     el.flowIndex.textContent = `${current} / ${total}`;
+  }
+  if (el.styleHeroImage) {
+    const src = style.originalPreviewUrl || style.previewUrl;
+    if (src && el.styleHeroImage.getAttribute("src") !== src) {
+      el.styleHeroImage.src = src;
+    }
+    el.styleHeroImage.alt = `${style.title} 风格预览`;
   }
   el.flowTags.innerHTML = "";
   (style.tags || []).forEach((tag) => {
@@ -357,7 +370,7 @@ function setGenerating(on) {
   el.generate.disabled = on;
   if (el.generationCount) el.generationCount.disabled = on;
   el.generate.classList.toggle("is-generating", on);
-  el.generate.querySelector(".primary-button__label").textContent = on ? "生成中…" : "生成";
+  el.generate.querySelector(".primary-button__label").textContent = on ? "生成中…" : "开始生成";
 }
 
 function isBatchCountEnabled() {
@@ -1000,8 +1013,8 @@ async function init() {
     setStatus("暂无可用风格", "error");
     return;
   }
-  state.activeIndex = -1;
-  localStorage.removeItem(STORAGE_KEYS.activeStyle);
+  state.activeIndex = 0;
+  if (state.styles[0]) localStorage.setItem(STORAGE_KEYS.activeStyle, state.styles[0].id);
   renderFancards();
   bindFanInteraction();
   updateSelectionState();
