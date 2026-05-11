@@ -4,6 +4,13 @@
 
 当前接口主要服务于本项目前端页面，但外部项目也可以通过 HTTP 调用。若要暴露到公网，建议先增加 API Key、限流、CORS 配置和任务持久化。
 
+服务端实现已按 route/service/lib 分层：
+
+- HTTP 路由在 `src/server/routes/*`。
+- 任务、审计、文件和 session 业务在 `src/server/services/*`。
+- JSON、multipart、cookie、路径安全和校验工具在 `src/server/lib/*`。
+- `src/server.js` 仅保留兼容启动入口。
+
 ## 服务地址
 
 启动服务：
@@ -406,6 +413,29 @@ curl -i -X POST http://localhost:5173/api/admin/login \
 ```
 
 成功后服务端会设置 `admin_session` HttpOnly cookie，有效期 12 小时。
+
+## 管理员会话状态
+
+```http
+GET /api/admin/session
+```
+
+用于前端判断是否已有有效管理员会话。该接口不会因未登录返回 `401`。
+
+### 成功响应
+
+```json
+{
+  "configured": true,
+  "authenticated": false
+}
+```
+
+字段说明：
+
+- `configured`：服务端是否已配置 `ADMIN_PASSWORD`
+- `authenticated`：当前请求是否携带有效 `admin_session`
+- `expired`：可选，当前 cookie 对应的会话是否已过期
 
 ## 管理员登出
 

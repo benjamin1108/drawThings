@@ -1,0 +1,59 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(47, 118, 107, 0.08), transparent 28%),
+    linear-gradient(180deg, #fafaf7 0%, var(--ink-2) 100%);
+  color: var(--text-0);
+  font-family: var(--font-body);
+  font-feature-settings: "tnum", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+select {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+pre {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}

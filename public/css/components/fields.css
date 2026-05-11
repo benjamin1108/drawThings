@@ -1,0 +1,69 @@
+.setting-field,
+.edit-field,
+.audit-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.setting-field__label,
+.edit-field__label,
+.audit-field span,
+.audit-filter span {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.setting-field select,
+.edit-field textarea,
+.description-editor textarea,
+.audit-field input,
+.audit-search input,
+.audit-filter select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line-1);
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--text-0);
+  outline: none;
+}
+
+.setting-field select,
+.audit-field input {
+  min-height: 44px;
+  padding: 0 34px 0 13px;
+  border-radius: 13px;
+}
+
+.setting-field select,
+.audit-filter select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'><path d='M1 1l4 4 4-4' stroke='%2355584f' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+}
+
+.edit-field textarea,
+.description-editor textarea {
+  resize: none;
+}
+
+.edit-field textarea {
+  min-height: 108px;
+  padding: 13px 14px;
+  border-radius: 16px;
+  line-height: 1.58;
+}
+
+:where(.setting-field select, .edit-field textarea, .description-editor textarea, .audit-field input):focus {
+  border-color: rgba(47, 118, 107, 0.42);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+::placeholder {
+  color: var(--text-3);
+}

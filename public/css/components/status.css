@@ -1,0 +1,75 @@
+.status,
+.edit-status,
+.audit-status {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.status.is-error,
+.edit-status.is-error,
+.audit-status.is-error {
+  color: var(--danger);
+}
+
+.audit-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line-1);
+  border-radius: 999px;
+  background: #f6f7f2;
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.audit-status-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.audit-status-pill--ok {
+  border-color: rgba(47, 118, 107, 0.25);
+  background: rgba(47, 118, 107, 0.09);
+  color: var(--ok);
+}
+
+.audit-status-pill--error {
+  border-color: rgba(181, 72, 72, 0.25);
+  background: rgba(181, 72, 72, 0.08);
+  color: var(--danger);
+}
+
+.audit-status-pill--pending {
+  border-color: rgba(119, 106, 62, 0.25);
+  background: rgba(119, 106, 62, 0.08);
+  color: var(--warning);
+}
+
+.audit-skeleton,
+.audit-stat--loading span,
+.audit-stat--loading strong,
+.audit-stat--loading em {
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0.48), rgba(24, 25, 22, 0.08), rgba(255, 255, 255, 0.48));
+  background-size: 220% 100%;
+  animation: skeletonSheen 1.7s var(--ease-spring) infinite;
+}
+
+.audit-skeleton {
+  height: 150px;
+  border: 1px solid var(--line-1);
+  border-radius: 18px;
+}
+
+.audit-skeleton--short {
+  height: 112px;
+}

@@ -1,0 +1,70 @@
+.atmosphere {
+  display: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: fixed;
+  top: -48px;
+  left: 16px;
+  z-index: 100;
+  padding: 10px 13px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  color: #fff;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 14px;
+}
+
+.hidden,
+[hidden] {
+  display: none !important;
+}
+
+.eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--line-1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow--accent {
+  border-color: rgba(47, 118, 107, 0.26);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.eyebrow--muted {
+  color: var(--text-2);
+}
+
+.brand--link {
+  text-decoration: none;
+}
+
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid rgba(47, 118, 107, 0.72);
+  outline-offset: 3px;
+}

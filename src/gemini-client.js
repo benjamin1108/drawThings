@@ -100,6 +100,7 @@ export async function generateText({
   model,
   baseUrl,
   apiKey,
+  referenceImages,
 }) {
   const resolvedPrompt = String(prompt || "").trim();
   if (!resolvedPrompt) {
@@ -116,10 +117,12 @@ export async function generateText({
     "https://generativelanguage.googleapis.com/v1beta";
   const useV1 = isV1Endpoint(resolvedBaseUrl);
   const responseModalities = ["TEXT"];
+  const resolvedReferences = normalizeReferenceImages(referenceImages);
   const body = buildTextRequestBody({
     prompt: resolvedPrompt,
     responseModalities,
     useV1,
+    referenceImages: resolvedReferences,
   });
 
   const response = await requestWithFallback({
@@ -140,6 +143,88 @@ export async function generateText({
     throw new Error("No text returned.");
   }
   return text;
+}
+
+export async function uploadFile({
+  data,
+  mimeType,
+  displayName,
+  baseUrl,
+  apiKey,
+}) {
+  const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data || "");
+  const resolvedMimeType = String(mimeType || "").trim();
+  if (!buffer.byteLength) {
+    throw new Error("Missing file data.");
+  }
+  if (!resolvedMimeType) {
+    throw new Error("Missing file mime type.");
+  }
+
+  const resolvedApiKey = apiKey || process.env.GEMINI_API_KEY;
+  if (!resolvedApiKey) {
+    throw new Error("Missing GEMINI_API_KEY in .env.");
+  }
+  const resolvedBaseUrl =
+    baseUrl ||
+    process.env.GEMINI_BASE_URL ||
+    "https://generativelanguage.googleapis.com/v1beta";
+  const uploadBaseUrl = toUploadBaseUrl(resolvedBaseUrl);
+  const startResponse = await fetch(`${uploadBaseUrl}/files?key=${resolvedApiKey}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Upload-Protocol": "resumable",
+      "X-Goog-Upload-Command": "start",
+      "X-Goog-Upload-Header-Content-Length": String(buffer.byteLength),
+      "X-Goog-Upload-Header-Content-Type": resolvedMimeType,
+    },
+    body: JSON.stringify({
+      file: {
+        display_name: String(displayName || "reference-image").slice(0, 120),
+      },
+    }),
+  });
+
+  if (!startResponse.ok) {
+    const errorText = await startResponse.text();
+    throw new Error(`File upload start failed: ${startResponse.status} ${startResponse.statusText}\n${errorText}`);
+  }
+
+  const uploadUrl = startResponse.headers.get("x-goog-upload-url");
+  if (!uploadUrl) {
+    throw new Error("File upload URL was not returned.");
+  }
+
+  const uploadResponse = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      "Content-Length": String(buffer.byteLength),
+      "Content-Type": resolvedMimeType,
+      "X-Goog-Upload-Offset": "0",
+      "X-Goog-Upload-Command": "upload, finalize",
+    },
+    body: buffer,
+  });
+
+  if (!uploadResponse.ok) {
+    const errorText = await uploadResponse.text();
+    throw new Error(`File upload failed: ${uploadResponse.status} ${uploadResponse.statusText}\n${errorText}`);
+  }
+
+  const payload = await uploadResponse.json();
+  const file = payload?.file;
+  if (!file?.uri) {
+    throw new Error("File upload did not return a file URI.");
+  }
+  return {
+    name: file.name || "",
+    uri: file.uri,
+    mimeType: file.mimeType || file.mime_type || resolvedMimeType,
+    displayName: file.displayName || file.display_name || displayName || "",
+    sizeBytes: file.sizeBytes || file.size_bytes || String(buffer.byteLength),
+    state: file.state || "",
+  };
 }
 
 function normalizeImageSize(size) {
@@ -178,20 +263,29 @@ function normalizeReferenceImages(referenceImages) {
   return referenceImages
     .map((item) => {
       const data = String(item?.data || "").trim();
+      const fileUri = String(item?.fileUri || item?.file_uri || item?.uri || "").trim();
       const mimeType = String(item?.mimeType || item?.mime_type || "").trim();
-      if (!data || !mimeType) {
+      if ((!data && !fileUri) || !mimeType) {
         return null;
       }
-      return { data, mimeType };
+      return {
+        data,
+        fileUri,
+        mimeType,
+      };
     })
     .filter(Boolean);
 }
 
-function buildTextRequestBody({ prompt, responseModalities, useV1 }) {
+function buildTextRequestBody({ prompt, responseModalities, useV1, referenceImages }) {
+  const parts = [{ text: prompt }];
+  referenceImages.forEach((image) => {
+    parts.push(buildReferencePart(image, useV1));
+  });
   const contents = [
     {
       role: "user",
-      parts: [{ text: prompt }],
+      parts,
     },
   ];
   if (useV1) {
@@ -220,21 +314,7 @@ function buildRequestBody({
 }) {
   const parts = [{ text: prompt }];
   referenceImages.forEach((image) => {
-    if (useV1) {
-      parts.push({
-        inline_data: {
-          mime_type: image.mimeType,
-          data: image.data,
-        },
-      });
-      return;
-    }
-    parts.push({
-      inlineData: {
-        mimeType: image.mimeType,
-        data: image.data,
-      },
-    });
+    parts.push(buildReferencePart(image, useV1));
   });
 
   const contents = [
@@ -275,6 +355,39 @@ function buildRequestBody({
     }
   }
   return { contents, generationConfig };
+}
+
+function buildReferencePart(image, useV1) {
+  if (image.fileUri) {
+    if (useV1) {
+      return {
+        file_data: {
+          mime_type: image.mimeType,
+          file_uri: image.fileUri,
+        },
+      };
+    }
+    return {
+      fileData: {
+        mimeType: image.mimeType,
+        fileUri: image.fileUri,
+      },
+    };
+  }
+  if (useV1) {
+    return {
+      inline_data: {
+        mime_type: image.mimeType,
+        data: image.data,
+      },
+    };
+  }
+  return {
+    inlineData: {
+      mimeType: image.mimeType,
+      data: image.data,
+    },
+  };
 }
 
 function extractText(payload) {
@@ -363,4 +476,18 @@ function uniqueNonEmpty(items) {
 
 function isV1Endpoint(url) {
   return url.includes("/v1") && !url.includes("/v1beta");
+}
+
+function toUploadBaseUrl(baseUrl) {
+  const value = String(baseUrl || "").replace(/\/+$/, "");
+  if (value.includes("/upload/")) {
+    return value;
+  }
+  if (value.endsWith("/v1beta")) {
+    return value.slice(0, -"/v1beta".length) + "/upload/v1beta";
+  }
+  if (value.endsWith("/v1")) {
+    return value.slice(0, -"/v1".length) + "/upload/v1";
+  }
+  return "https://generativelanguage.googleapis.com/upload/v1beta";
 }

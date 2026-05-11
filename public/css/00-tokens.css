@@ -1,0 +1,32 @@
+:root {
+  color-scheme: light;
+  --ink-0: #f7f7f4;
+  --ink-1: #ffffff;
+  --ink-2: #f0f1ed;
+  --ink-3: #e3e5dd;
+  --text-0: #181916;
+  --text-1: #55584f;
+  --text-2: #7f8378;
+  --text-3: #a9ada2;
+  --line-1: rgba(24, 25, 22, 0.1);
+  --line-2: rgba(24, 25, 22, 0.16);
+  --line-3: rgba(24, 25, 22, 0.28);
+  --accent: #2f766b;
+  --accent-strong: #214e48;
+  --accent-soft: rgba(47, 118, 107, 0.12);
+  --danger: #b54848;
+  --warning: #776a3e;
+  --ok: #2f766b;
+  --radius-xl: 26px;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 9px;
+  --shadow-ambient: 0 24px 70px -52px rgba(22, 26, 22, 0.62);
+  --shadow-float: 0 16px 46px -34px rgba(22, 26, 22, 0.5);
+  --sidebar-width: 318px;
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-display: "Geist", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-body: "Geist", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+}

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DrawThings 改图工作台</title>
+    <meta
+      name="description"
+      content="上传参考图，提取完整视觉规格，局部修改描述后重新生成。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@500;700;800&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="edit-body">
+    <a class="skip-link" href="#description">跳到描述编辑区</a>
+
+    <div class="edit-shell">
+      <header class="topbar edit-topbar reveal reveal--1">
+        <div class="topbar__bezel">
+          <div class="topbar__core">
+            <a class="brand brand--link" href="/" aria-label="返回生图工作台">
+              <span class="brand-mark" aria-hidden="true"></span>
+              <span class="brand__text">
+                <span class="brand__wordmark">DrawThings</span>
+                <span class="brand__tag">改图工作台</span>
+              </span>
+            </a>
+            <nav class="topbar-actions" aria-label="工作台切换">
+              <a class="chip-button chip-button--ghost" href="/">
+                <span>生图</span>
+              </a>
+              <a class="chip-button chip-button--active" href="/edit.html" aria-current="page">
+                <span class="chip-button__dot" aria-hidden="true"></span>
+                <span>改图</span>
+              </a>
+              <a class="chip-button chip-button--ghost" href="/audit.html">
+                <span>管理</span>
+                <span class="chip-button__arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+                </span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <main class="edit-workbench" aria-label="改图流程">
+        <section class="edit-panel edit-panel--reference reveal reveal--2" aria-labelledby="reference-title">
+          <div class="edit-panel__head">
+            <div>
+              <span class="eyebrow eyebrow--accent">01 参考图</span>
+              <h1 id="reference-title">上传原图</h1>
+            </div>
+            <div class="edit-panel__actions">
+              <button class="chip-button chip-button--micro chip-button--ghost" type="button" id="zoom-reference" disabled>
+                <span>查看</span>
+              </button>
+              <button class="chip-button chip-button--micro chip-button--ghost" type="button" id="clear-reference" disabled>
+                <span>清空</span>
+              </button>
+            </div>
+          </div>
+
+          <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+          <button class="dropzone" type="button" id="dropzone">
+            <span class="dropzone__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v10"/><path d="M8 9l4-4 4 4"/><path d="M20 15v3.5A1.5 1.5 0 0 1 18.5 20h-13A1.5 1.5 0 0 1 4 18.5V15"/></svg>
+            </span>
+            <span class="dropzone__title">选择或粘贴图片</span>
+            <span class="dropzone__meta">PNG / JPG / WEBP</span>
+          </button>
+
+          <div class="upload-progress" id="upload-progress" hidden>
+            <div class="upload-progress__head">
+              <span id="upload-progress-label">准备上传</span>
+              <span id="upload-progress-value">0%</span>
+            </div>
+            <div class="upload-progress__track" aria-hidden="true">
+              <span id="upload-progress-fill"></span>
+            </div>
+          </div>
+
+          <figure class="reference-preview" id="reference-preview" hidden>
+            <img id="reference-image" alt="上传的参考图" />
+            <figcaption id="reference-meta"></figcaption>
+          </figure>
+
+          <label class="edit-field" for="user-note">
+            <span class="edit-field__label">补充意图</span>
+            <textarea
+              id="user-note"
+              rows="4"
+              placeholder="例如：重点识别海报里的字体、产品位置和背景质感。"
+            ></textarea>
+          </label>
+        </section>
+
+        <section class="edit-panel edit-panel--description reveal reveal--3" aria-labelledby="description-title">
+          <div class="edit-panel__head edit-panel__head--split">
+            <div>
+              <span class="eyebrow eyebrow--accent">02 描述 / 03 修改</span>
+              <h2 id="description-title">图像规格说明</h2>
+            </div>
+            <button class="primary-button" type="button" id="analyze-button" disabled>
+              <span class="primary-button__label">分析图片</span>
+              <span class="primary-button__trail" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </span>
+            </button>
+          </div>
+
+          <div class="description-editor">
+            <div class="description-editor__topline">
+              <span id="analysis-model">gemini-3.1-pro-preview</span>
+              <span id="description-count">0 字</span>
+            </div>
+            <textarea
+              id="description"
+              placeholder="模型会在这里生成可编辑的图像规格说明。"
+              spellcheck="false"
+            ></textarea>
+          </div>
+          <div class="edit-status" id="analysis-status" aria-live="polite">等待参考图</div>
+        </section>
+
+        <aside class="edit-panel edit-panel--result reveal reveal--4" aria-labelledby="result-title">
+          <div class="edit-panel__head">
+            <div>
+              <span class="eyebrow eyebrow--accent">04 再生成</span>
+              <h2 id="result-title">结果预览</h2>
+            </div>
+            <div class="edit-panel__actions">
+              <button class="chip-button chip-button--micro chip-button--ghost" type="button" id="zoom-result" disabled>
+                <span>查看</span>
+              </button>
+              <button class="chip-button chip-button--micro chip-button--ghost" type="button" id="download-result" disabled>
+                <span>下载</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="result-frame" id="result-frame">
+            <div class="result-empty" id="result-empty">
+              <span class="result-empty__mark" aria-hidden="true"></span>
+              <p>修改描述后生成结果会显示在这里。</p>
+            </div>
+            <div class="result-loader hidden" id="result-loader">
+              <span></span><span></span><span></span>
+            </div>
+            <img class="result-image hidden" id="result-image" alt="改图生成结果" />
+            <div class="result-error hidden" id="result-error"></div>
+          </div>
+
+          <div class="edit-settings">
+            <label class="setting-field">
+              <span class="setting-field__label">比例</span>
+              <select id="edit-aspect">
+                <option value="16:9">16:9 横版</option>
+                <option value="9:16">9:16 竖版</option>
+                <option value="4:3">4:3 标准</option>
+                <option value="1:1">1:1 方图</option>
+              </select>
+            </label>
+            <label class="setting-field">
+              <span class="setting-field__label">质量</span>
+              <select id="edit-size">
+                <option value="2K">标准</option>
+                <option value="4K">高清</option>
+              </select>
+            </label>
+            <label class="setting-field">
+              <span class="setting-field__label">策略</span>
+              <select id="edit-model-mode">
+                <option value="quality">细节优先</option>
+                <option value="speed">速度优先</option>
+              </select>
+            </label>
+          </div>
+
+          <button class="primary-button edit-generate" type="button" id="regenerate-button" disabled>
+            <span class="primary-button__label">按修改描述生成</span>
+            <span class="primary-button__trail" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </span>
+          </button>
+        </aside>
+      </main>
+    </div>
+
+    <div class="edit-viewer hidden" id="edit-viewer" aria-hidden="true">
+      <button class="edit-viewer__backdrop" type="button" id="viewer-backdrop" aria-label="关闭大图预览"></button>
+      <figure class="edit-viewer__content">
+        <button class="edit-viewer__close" type="button" id="viewer-close" aria-label="关闭大图预览">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        <img id="viewer-image" alt="大图预览" />
+        <figcaption id="viewer-caption"></figcaption>
+      </figure>
+    </div>
+
+    <script type="module" src="/js/edit/index.js"></script>
+  </body>
+</html>

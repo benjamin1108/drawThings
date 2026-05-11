@@ -1,0 +1,125 @@
+.app,
+.edit-shell,
+.audit-shell {
+  position: relative;
+  z-index: 1;
+  width: min(1480px, 100%);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 18px 20px;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--sidebar-width);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "topbar topbar"
+    "main sidebar";
+  gap: 18px;
+}
+
+.app.history-collapsed {
+  grid-template-columns: minmax(0, 1fr) 72px;
+}
+
+.app > .topbar {
+  grid-area: topbar;
+}
+
+.workspace {
+  grid-area: main;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+  min-width: 0;
+}
+
+.history-sidebar {
+  grid-area: sidebar;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  align-content: start;
+}
+
+.edit-shell,
+.audit-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+}
+
+@media (min-width: 1181px) {
+  body:not(.audit-body):not(.edit-body) {
+    overflow: hidden;
+  }
+
+  .app {
+    height: 100dvh;
+    min-height: 0;
+    grid-template-columns: minmax(304px, 348px) minmax(0, 1fr) minmax(282px, 318px);
+    grid-template-areas:
+      "topbar topbar topbar"
+      "main main sidebar";
+    overflow: hidden;
+  }
+
+  .app.history-collapsed {
+    grid-template-columns: minmax(304px, 348px) minmax(0, 1fr) minmax(282px, 318px);
+  }
+
+  .workspace {
+    height: calc(100dvh - 94px);
+    grid-template-columns: minmax(304px, 348px) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: "style composer";
+    overflow: hidden;
+  }
+
+  .stage {
+    grid-area: style;
+  }
+
+  .chatbox-wrapper {
+    grid-area: composer;
+  }
+
+  .history-sidebar {
+    height: calc(100dvh - 94px);
+    overflow: hidden;
+  }
+
+  .workspace:has(.stage-mode--canvas:not(.hidden)) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "result";
+  }
+
+  .workspace:has(.stage-mode--canvas:not(.hidden)) .stage {
+    grid-area: result;
+  }
+
+  .workspace:has(.stage-mode--canvas:not(.hidden)) .chatbox-wrapper {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .app,
+  .app.history-collapsed {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "topbar"
+      "main"
+      "sidebar";
+  }
+}
+
+@media (max-width: 720px) {
+  .app,
+  .edit-shell,
+  .audit-shell {
+    padding: 12px;
+    gap: 14px;
+  }
+}
